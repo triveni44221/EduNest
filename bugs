@@ -1,0 +1,31 @@
+
+login for - password visibility icon - after clicking once, eye is disappearing
+
+styles of icons in sidebar
+
+
+
+copy students.js
+{ label: "Father's Name", id: 'fathersName', type: 'text', required: true, value: studentData.fathersName || '' },
+        { label: "Father's Occupation", id: 'fatherOccupation', type: 'select', required: false, options: [], value: studentData.fatherOccupation || '' },
+        { label: "Father's Cell No.", id: 'fatherCell', type: 'text', required: true, pattern: '\\d{10}', maxLength: 10, value: studentData.fatherCell || '' },
+    
+        { label: "Mother's Name", id: 'mothersName', type: 'text', required: true, value: studentData.mothersName || '' },
+        { label: "Mother's Occupation", id: 'motherOccupation', type: 'select', required: false, options: [], value: studentData.motherOccupation || '' },
+        { label: "Mother's Cell No.", id: 'motherCell', type: 'text', required: true, pattern: '\\d{10}', maxLength: 10, value: studentData.motherCell || '' },
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+        fatherOccupation: document.getElementById("fatherOccupation").value,
+        motherOccupation: document.getElementById("motherOccupation").value,

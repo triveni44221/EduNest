@@ -1,0 +1,75 @@
+
+    <div id="testsTab">
+        <div class="tests-header white-background">
+            <div class="tabs">
+                <button id="viewAllTestsTabButton" class="tab-button active">View All Tests</button>
+                <button id="addNewTestTabButton" class="tab-button">Add a New Test</button>
+                <button id="pastTestsTabButton" class="tab-button">Past Tests</button>
+            </div>
+        </div>
+
+        <!-- Tabs Content -->
+        <div class="tab-content" id="viewAllTestsTab">
+            
+            <div id="allTestsContainer" class="test-list"></div>
+        </div>
+
+        <div class="tab-content" id="addNewTestTab">
+            <form id="addTestForm">
+                <div class="form-group">
+                    <label for="yearDropdown">Year:</label>
+                    <select id="yearDropdown" required>
+                        <option value="all">All</option>
+                        <option value="firstYear">First Year</option>
+                        <option value="secondYear">Second Year</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="groupDropdown">Group:</label>
+                    <select id="groupDropdown" required>
+                        <option value="all">All</option>
+                        <option value="MPC">MPC</option>
+                        <option value="BiPC">BiPC</option>
+                        <option value="MEC">MEC</option>
+                        <option value="CEC">CEC</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="testNameDropdown">Test Name:</label>
+                    <select id="testNameDropdown" required>
+                        <option value="" disabled selected>Select Test Type</option>
+                        <option value="Unit Test">Unit Test</option>
+                        <option value="Quarterly">Quarterly</option>
+                        <option value="Half Yearly">Half Yearly</option>
+                        <option value="Prefinal">Prefinal</option>
+                        <option value="Individual Subject Test">Individual Subject Test</option>
+                    </select>
+                </div>
+                <div class="form-group" id="testNumberContainer">
+                    <label for="testNumberDropdown">Test Number:</label>
+                    <select id="testNumberDropdown">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="testDate">Date of Commencement:</label>
+                    <input type="date" id="testDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="syllabusBox">Syllabus:</label>
+                    <textarea id="syllabusBox" rows="4" placeholder="Enter syllabus details..."></textarea>
+                </div>
+                <button type="submit" class="submit-button">Add Test</button>
+            </form>
+        </div>
+
+        <div class="tab-content" id="pastTestsTab">
+            <div class="filters-container">
+                <input type="text" id="searchPastTestsInput" placeholder="Search past tests...">
+            </div>
+            <div id="pastTestsContainer" class="test-list"></div>
+        </div>
+    </sdiv>

@@ -1,0 +1,112 @@
+[
+  {
+    "studentId": "24081",
+    "studentName": "Akula Varun",
+    "admissionNumber": "3374",
+    "contactNumber": "7675080149",
+    "year": "first",
+    "groupName": "mpc",
+    "medium": "english",
+    "batchYear": "2024-25"
+  },
+  {
+    "studentId": "24136",
+    "studentName": "Bhaswani Revathi Sri",
+    "admissionNumber": "3371",
+    "contactNumber": "9398996835",
+    "year": "first",
+    "groupName": "bipc",
+    "medium": "english",
+    "batchYear": "2024-25"
+  },
+  {
+    "studentId": "24160",
+    "studentName": "Bandaru Anil",
+    "admissionNumber": "3436",
+    "contactNumber": "8340804656",
+    "year": "first",
+    "groupName": "cec",
+    "medium": "english",
+    "batchYear": "2024-25"
+  },
+  {
+    "studentId": "23001",
+    "studentName": "Nittala Sree Vyshnavi",
+    "admissionNumber": "3285",
+    "contactNumber": "9949259454",
+    "year": "second",
+    "groupName": "mpc",
+    "medium": "english",
+    "batchYear": "2024-25"
+  },
+  {
+    "studentId": "23004",
+    "studentName": "Ithamraju Nishitha",
+    "admissionNumber": "3301",
+    "contactNumber": "8919559621",
+    "year": "second",
+    "groupName": "cec",
+    "medium": "english",
+    "batchYear": "2024-25"
+  },
+  {
+    "studentId": "23010",
+    "studentName": "Kotte Rakshan",
+    "admissionNumber": "3293",
+    "contactNumber": "9866929837",
+    "year": "second",
+    "groupName": "mec",
+    "medium": "english",
+    "batchYear": "2024-25"
+  },
+  {
+    "studentId": "23036",
+    "studentName": "Penuballi Prathima Sri",
+    "admissionNumber": "3324",
+    "contactNumber": "8008086773",
+    "year": "second",
+    "groupName": "bipc",
+    "medium": "english",
+    "batchYear": "2024-25"
+  },
+  {
+    "studentId": "52144",
+    "studentName": "ooaa",
+    "admissionNumber": "2598",
+    "contactNumber": "9874693214",
+    "year": "second",
+    "groupName": "mpc",
+    "medium": "english",
+    "batchYear": "2023-24"
+  },
+  {
+    "studentId": "45369",
+    "studentName": "kkkdf",
+    "admissionNumber": "5426",
+    "contactNumber": "7417417415",
+    "year": "second",
+    "groupName": "bipc",
+    "medium": "english",
+    "batchYear": "2023-24"
+  },
+  {
+    "studentId": "41973",
+    "studentName": "oipsda",
+    "admissionNumber": "3910",
+    "contactNumber": "7417526295",
+    "year": "second",
+    "groupName": "mec",
+    "medium": "telugu",
+    "batchYear": "2023-24"
+  },
+  {
+    "studentId": "45780",
+    "studentName": "kdrt",
+    "admissionNumber": "5980",
+    "contactNumber": "7890000000",
+    "year": "second",
+    "groupName": "cec",
+    "medium": "telugu",
+    "batchYear": "2024-25"
+  }
+]

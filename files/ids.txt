@@ -1,0 +1,227 @@
+commit this to your memory for future references.
+
+1. IDs by Sections
+
+Header Section:
+
+searchInput - Input field for search functionality.
+
+Sidebar Buttons:
+
+homeButton
+
+studentsButton
+
+testsButton
+
+classPerformanceButton
+
+individualPerformanceButton
+
+generateReportsButton
+
+notificationsButton
+
+settingsButton
+
+Students Tab:
+
+Containers:
+
+dashboardContent - Main content area.
+
+subTabContent - Sub-tab content area.
+
+studentsTab - Container for Students tab.
+
+studentDataContainer - Container to display student data.
+
+filtersContainer - Container for filters.
+
+studentFormContainer - Container for student forms.
+
+addStudentTab - Content for Add Students tab.
+
+addStudentFormContainer - Container for Add Student form.
+
+Buttons and Tabs:
+
+allStudentsTabButton - Button to view all students.
+
+addStudentTabButton - Button to add students.
+
+allStudentsTab - Content for All Students tab.
+
+Filters:
+
+firstYearCheckbox - Checkbox for first-year students.
+
+secondYearCheckbox - Checkbox for second-year students.
+
+mpcCheckbox - Checkbox for MPC group.
+
+bipcCheckbox - Checkbox for BiPC group.
+
+mecCheckbox - Checkbox for MEC group.
+
+cecCheckbox - Checkbox for CEC group.
+
+Tests Tab:
+
+Containers:
+
+testsTab - Container for Tests tab.
+
+viewAllTestsTab - Content for viewing all tests.
+
+addNewTestTab - Content for adding a new test.
+
+pastTestsTab - Content for past tests.
+
+allTestsContainer - Container for displaying all tests.
+
+pastTestsContainer - Container for displaying past tests.
+
+Buttons:
+
+viewAllTestsTabButton - View all tests.
+
+addNewTestTabButton - Add a new test.
+
+pastTestsTabButton - View past tests.
+
+Form Elements:
+
+addTestForm - Form to add a new test.
+
+yearDropdown - Dropdown for selecting year.
+
+groupDropdown - Dropdown for selecting group.
+
+testNameDropdown - Dropdown for selecting test type.
+
+testNumberContainer - Container for test number selection.
+
+testNumberDropdown - Dropdown for test number.
+
+testDate - Input for test date.
+
+syllabusBox - Text area for syllabus details.
+
+Filters and Inputs:
+
+searchPastTestsInput - Search input for past tests.
+
+selectAllCheckbox - Checkbox to select all classes.
+
+Shared Elements:
+
+welcomeMessageContainer - Container for welcome messages.
+
+maxMarksInput - Input for maximum marks.
+
+maxMarksHint - Hint about predefined marks.
+
+subjectDateFieldsContainer - Container for subject date fields.
+
+2. Functions by Modules
+
+Preload.js:
+
+invoke(channel, data) - Handles IPC invoke calls for fetching data.
+
+send(channel, data) - Sends data to the main process through IPC.
+
+receive(channel, func) - Receives data or events from the main process through IPC.
+
+Main.js:
+
+createWindow() - Initializes and creates the Electron browser window.
+
+saveStudentLocally(studentData) - Saves student data locally in a JSON file.
+
+IPC Handlers:
+
+'load-tests-html' - Reads and returns contents of tests.html.
+
+'addStudent' - Adds a student to the local JSON file.
+
+'fetchStudents' - Fetches student data from the local JSON file.
+
+'deleteSelectedStudents' - Deletes selected students based on ID.
+
+'updateStudents' - Updates student data in the JSON file.
+
+Renderer.js (Student Management):
+
+Initialization:
+
+initializeView() – Hides all tabs initially.
+
+initializeApp() – Fetches student data and displays it on startup.
+
+Tab Navigation:
+
+hideAllTabs() – Hides all tab content sections.
+
+toggleTab(tabId, welcomeMessage) – Displays the selected tab.
+
+showStudentsTab() – Loads all students in the Students tab.
+
+Filters and Rendering:
+
+filterAndRenderStudents() – Filters and displays student data.
+
+renderStudentList(students) – Displays a filtered list of students.
+
+renderAddStudentForm() – Generates the Add Student form dynamically.
+
+Event Handlers:
+
+attachRowClickEvents() – Adds click events to student rows.
+
+displayStudentData(studentId) – Displays details of a selected student.
+
+Utility Functions:
+
+fetchStudentsFromLocalDisk() – Fetches student data locally.
+
+populateBatchYearDropdown() – Populates dropdown values.
+
+Tests.js (Test Management):
+
+Tab Switching:
+
+Handles navigation between View All Tests, Add Test, and Past Tests.
+
+Dropdown Handling:
+
+Dynamically toggles dropdown visibility based on selection.
+
+Checkbox Handling:
+
+Controls "Select All" and individual checkbox behaviors.
+
+Dynamic Fields:
+
+Adds subject-date rows dynamically.
+
+Form Handling:
+
+Validates input and handles test form submission.
+
+Search Filters:
+
+Filters past tests based on user input.
+
+3. Summary of Structure
+
+Organized IDs: Grouped by tabs and functionality.
+
+Functions Overview: Categorized by purpose for easier debugging and updates.
+
+Tests Features: Separated dynamic handling for dropdowns, checkboxes, and filters.
+
+Centralized IPC Handlers: For efficient data handling.
+
+This structure simplifies debugging, maintenance, and feature expansion for EduTrack.

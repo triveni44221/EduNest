@@ -1,0 +1,697 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    font-family: 'Roboto', sans-serif; /* More professional font */
+    background-color: #f8f9fa; /* Light background */
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+}
+
+/* Header */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 30px; /* More generous padding */
+    background-color: #2c3e50; 
+    color: #ffffff;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    width: 100%;
+    height: 80px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Softer shadow for subtle depth */
+}
+
+.welcome-message {
+    font-size: 60px;
+    font-weight: 700; /* Lighter weight for more modern feel */
+    color: #ecf0f1;
+    margin-left: 400px;
+    font-family: 'Lato', sans-serif; /* Apply Lato font */
+}
+
+
+/* Center only the login container */
+.login-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Full viewport height */
+    width: 100%;
+}
+
+/* Login Container Styling */
+.login-container {
+    width: 100%;
+    max-width: 420px;
+    height: 550px;
+    padding: 2.5rem;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    text-align: center;
+    animation: fadeIn 0.5s ease;
+}
+/* Heading Styling */
+.login-container h1 {
+    margin-bottom: 1.5rem;
+    font-size: 1.8rem;
+    color: var(--primary-color);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .login-container {
+        width: 90%;
+        padding: 1.5rem;
+    }
+
+    button {
+        font-size: 1rem;
+        padding: 0.7rem;
+    }
+}
+
+/* Error Message */
+.error-message {
+    color: var(--error-color);
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+    display: none;
+    animation: shake 0.3s ease;
+}
+
+/* Search Container */
+.search-container {
+    display: flex;
+    align-items: center;
+    max-width: 320px;
+    width: 100%;
+    position: relative;
+    top: 11px;
+}
+.search-container input {
+    padding: 10px 15px; /* Slightly larger padding */
+    height: 45px;
+    border: 1px solid #ccc;
+    border-radius: 25px;
+    width: 100%;
+    text-align: center;
+    transition: border-color 0.3s ease;
+}
+
+.search-container input::placeholder {
+    font-size: 16px;
+    color: #7c7a7a;
+}
+
+.search-container input:focus {
+    border-color: #007bff; /* Softer focus color */
+}
+
+.search-icon {
+    position: absolute;
+    right: 20px;
+    top: 35%;
+    transform: translateY(-50%);
+    font-size: 1.2rem;
+    color: #666;
+    cursor: pointer;
+    pointer-events: none;
+}
+
+
+/* Sidebar */
+.sidebar {
+    width: 260px;
+    background-color: #ffffff;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    top: 50px;
+    left: 0;
+    padding-top: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    height: calc(100vh - 70px);
+    overflow-y: auto;
+}
+
+
+#sidebar a {
+    display: block;
+    padding: 10px;
+    color: white;
+    text-decoration: none;
+    margin-bottom: 10px;
+}
+#sidebar a:hover {
+    background-color: #34495e;
+}
+
+/* Sidebar Section Styling */
+.sidebar-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    padding: 0; /* Add padding around section for breathing room */
+}
+
+/* Sidebar Section Title Styling */
+.sidebar-section h3 {
+    background-color: #284361;
+    color: #ffffff;
+    width: 100%;
+    height: 35px;
+    text-align: center;
+    font-size: 18px; /* Slightly smaller font for cleaner look */
+    margin-bottom: 15px; /* More space between title and buttons */
+    border-radius: 5px; /* Rounded corners */
+    display: flex;
+    justify-content: center;
+    align-items: center; /* Vertically centers the text */
+}
+/* Sidebar Button */
+.sidebar-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: transparent;
+    color: #333;
+    border: none;
+    cursor: pointer;
+    border-radius: 8px;
+    margin: 5px 0;
+    width: 100%;
+    height: 45px;
+    padding: 0 15px;
+    text-align: left;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.sidebar-button:hover {
+    background-color: #f0f8ff;
+    color: #0056b3;
+}
+
+.sidebar-button.active {
+    background-color: #5c9adb;
+    color: #fff;
+}
+
+/* Sidebar Icon Styling */
+.sidebar i {
+    font-size: 1.5rem;
+    margin-left: 12px;
+    margin-right: 15px;
+    transition: transform 0.3s ease;
+}
+* Main Content Area */
+.container {
+    display: flex;
+    margin-left: 260px;
+    padding: 25px;
+    flex-grow: 1;
+    min-height: 100vh;
+    flex-direction: column; 
+    margin-top: 70px;
+}
+#content {
+    flex-grow: 1;
+    padding: 35px;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    margin-left: 260px; /* Ensure alignment with sidebar */
+    margin-top: 80px; /* Adjust for header height */
+}
+
+/* Button Styles */
+button {
+    background-color: #284361;
+    color: white;
+    padding: 14px 30px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+    margin-top: 20px;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+/* Centering Add Students and All Students */
+.buttons-group {
+    display: flex;
+    justify-content: center;
+    gap: 50px;  /* Space between the buttons */
+    margin-top: 20px;
+    
+}
+
+/* Label and Input Styling */
+label {
+    font-size: 16px;
+    margin: 12px 0 8px;
+    color: #333;
+}
+
+input, select, textarea {
+    padding: 12px;
+    font-size: 14px;
+    width: 100%;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    outline: none;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease; 
+    height: 45px;
+}
+input:hover, select:hover, textarea:hover {
+    border-color: #007bff;  /* Change border color on hover */
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);  /* Soft glow effect */
+}
+
+/* Focus effect */
+input:focus, select:focus, textarea:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+/* Form Styling */
+form {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Button Styling for Form */
+form button {
+    background-color: #007bff;
+    color: white;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+    margin-top: 20px;
+    align-self: center;
+}
+
+form button:hover {
+    background-color: #0056b3;
+}
+
+/* Form Row Styling */
+.form-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    gap: 25px;
+    width: 50%;
+}
+
+/* Form Group Styling */
+.form-group {
+    width: 48%;
+}
+
+.form-group.small {
+    width: 25%;
+    margin-right: 5px;
+}
+
+.form-group.large {
+    width: 60%;
+}
+
+/* Specific Styling for 3rd Row (Target the 3rd .form-row using nth-child) */
+.form-row:nth-of-type(3) {
+    gap: 20px; /* Reduce the gap between fields in the 3rd row */
+    width: 80%; /* Ensure the 3rd row takes full width */
+}
+
+.form-group label {
+    margin-bottom: 5px; /* Space between label and input field */
+}
+
+/* Centering the submit button */
+.form-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    padding-top: 10px;
+}
+
+/* Optional: Adjusting form container's padding for better visual balance */
+.form-container {
+    padding-top: 10px;
+}
+
+.submit-button {
+    margin: 0 auto;
+    display: block;
+    background-color: #284361;
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.submit-button:hover {
+    background-color: #1a2f47;
+}
+.student-item {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin: 5px 0;
+}
+
+/* Table Styles */
+.student-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 80px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.student-table th, .student-table td {
+    padding: 12px;
+    text-align: left;
+    border: 1px solid #ddd;
+    font-family: Arial, sans-serif;
+}
+
+.student-table th {
+    background-color: #f4f4f4;
+    color: #333;
+    font-weight: bold;
+}
+
+.student-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.student-table tr:hover {
+    background-color: #eaeaea;
+}
+
+/* Responsive Design for smaller screens */
+@media (max-width: 768px) {
+    .student-table {
+        font-size: 14px;
+    }
+    
+    .student-table th, .student-table td {
+        padding: 8px;
+    }
+}
+
+/* Empty Message Styles */
+.student-table p {
+    font-size: 16px;
+    color: #555;
+    margin-top: 20px;
+    text-align: center;
+}
+
+/* Basic table styling */
+.student-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 16px;
+    text-align: left;
+}
+
+.student-table th, .student-table td {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+}
+
+/* Style for sortable headers */
+.student-table th {
+    background-color: #f4f4f4;
+    cursor: pointer; /* Indicate that the header is clickable */
+    position: relative;
+    user-select: none; /* Prevent text selection when clicking */
+}
+
+.student-table th:hover {
+    background-color: #e0e0e0; /* Highlight effect on hover */
+}
+
+/* Sort indicator arrows */
+.student-table th:after {
+    content: '\f0dc'; /* Font Awesome sort icon */
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    position: absolute;
+    right: 10px;
+    opacity: 0.5;
+    font-size: 12px;
+}
+
+.student-table th.sorted-asc:after {
+    content: '\f062'; /* Up arrow for ascending sort */
+    opacity: 0.8;
+}
+
+.student-table th.sorted-desc:after {
+    content: '\f063'; /* Down arrow for descending sort */
+    opacity: 0.8;
+}
+
+/* Row styling for readability */
+.student-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.student-table tr:hover {
+    background-color: #f1f1f1; /* Row hover effect */
+}
+
+/* Adjust checkbox position */
+.student-table input[type="checkbox"] {
+    vertical-align: middle; /* Align checkbox vertically to the center of the row */
+    margin: 0;
+    padding: 0;
+}
+/* Hide sorting arrows for the "Select All" checkbox column */
+th.no-sort::after,
+th.no-sort::before {
+    display: none;
+    content: '';
+}
+/* Style for the student information container */
+#studentInfoContainer {
+    background-color: #f9f9f9;
+    padding: 20px;
+    margin: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Header style */
+#studentInfoContainer h3 {
+    color: #2c3e50;
+    font-size: 24px;
+    margin-bottom: 15px;
+}
+
+/* Use CSS Grid for the student details */
+.student-details {
+    display: grid;
+    grid-template-columns: 1fr 2fr; /* 1 for label, 2 for value */
+    gap: 10px; /* Adds space between rows */
+    align-items: center; /* Vertically align items in the center */
+}
+
+/* Style for each label-value pair */
+.student-details .student-detail {
+    display: contents; /* Make each pair a grid item */
+}
+
+.student-details .student-detail strong {
+    font-weight: bold;
+    color: #34495e;
+}
+#studentInfoContainer {
+    display: none;
+}
+
+
+/* Style for the Back button */
+#studentInfoContainer button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 4px;
+    margin-top: 20px;
+    transition: background-color 0.3s ease;
+}
+
+#studentInfoContainer button:hover {
+    background-color: #2980b9;
+}
+/* Style for the delete button */
+.delete-button {
+    background-color: #c9c9c9; /* Background color */
+    color: rgb(12, 12, 12); /* Text color */
+    padding: 12px 25px; /* Comfortable padding */
+    font-size: 18px; /* Larger text for readability */
+    border: none; /* No border */
+    border-radius: 8px; /* Slightly rounded corners */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transitions */
+    max-width: 300px; /* Limit max width to keep it neat */
+    margin: 20px 0 20px auto; /* Align to the right (auto on left) */
+    display: block; /* Ensure it's treated as a block element */
+}
+
+/* Hover effect */
+.delete-button:hover {
+    background-color: #d32f2f; /* Slightly darker red */
+    transform: scale(1.05); /* Slightly bigger when hovered */
+}
+
+/* Focus style */
+.delete-button:focus {
+    outline: 3px solid #ff4081; /* Highlight with pink border */
+    outline-offset: 3px; /* Offset the focus ring */
+}
+
+/* Active state when clicked */
+.delete-button:active {
+    background-color: #ce4c4c; /* Darker red when clicked */
+    transform: scale(0.98); /* Shrink slightly when clicked */
+}
+/* General styling for the filters */
+.filters {
+    margin-top: 10px;
+    border-radius: 8px; /* Rounded corners for a modern look */
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Year checkbox container (First Year, Second Year) */
+.year-checkbox-container {
+    margin-top: 10px;
+    display: flex;
+    gap: 20px; /* Space between checkboxes */
+    align-items: center; /* Align checkboxes and text in the center */
+    margin-right: 20px;
+    margin-left: 10px;
+}
+
+/* Group checkbox container (MPC, BiPC, MEC, CEC) */
+.groupName-checkbox-container {
+    margin-top: 10px;
+    display: flex;
+    gap: 20px; /* Space between checkboxes */
+    align-items: center; /* Align checkboxes and text in the center */
+    margin-left: 10px;
+}
+
+/* Container for both groups (year and group checkboxes) */
+.checkbox-container {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;  /* Ensure items align in the middle */
+    gap: 110px; /* Space between the two groups */
+}
+
+/* Separator line between year and group checkboxes */
+.separator {
+    margin-top: 10px;
+    border-left: 3px solid #c0bfbf;
+    height: 30px; /* Line height */
+    position: relative; /* Enables positioning adjustments */
+    top: -8px;
+}
+
+/* Style for checkboxes and their labels */
+input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    accent-color: #4CAF50; /* Green color for the checkbox when checked */
+    transition: transform 0.3s ease, background-color 0.3s ease; /* Smooth transition for hover effect */
+}
+
+/* Increase specificity by including parent classes */
+.filters-container .checkbox-container label {
+    margin-top: 15px !important;
+    font-size: 16px;
+    font-weight: 500;
+    color: #555;
+    cursor: pointer;
+    transition: color 0.3s ease;
+    display: inline-block;
+    position: relative;
+    top: -10px !important;
+}
+
+/* Hover effect for labels */
+.filters label:hover {
+    color: #333; /* Darker color on hover */
+}
+
+/* Optional: Add a hover effect for the checkboxes to make them more interactive */
+input[type="checkbox"]:hover {
+    transform: scale(1.1); /* Slightly enlarge checkbox on hover */
+    background-color: #e8f5e9; /* Light green background on hover */
+}
+.hidden {
+    display: none;
+}
+
+.tab-button.active {
+    background-color: #69a9ee;
+    color: #fff;
+    font-weight: bold;
+}
+#studentDataContainer {
+    padding: 10px;
+    border: 1px solid #ccc;
+    margin-top: 10px;
+    background-color: #e6e6e6;
+}
+.tab-content {
+    padding: 20px;
+    margin: 15px;
+    border-radius: 12px;
+    background-color: #fff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+
+.hidden-checkboxes {
+    display: none;
+}

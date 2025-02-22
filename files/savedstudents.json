@@ -1,0 +1,143 @@
+
+[
+    {
+      "studentId": "81",
+      "studentName": "Akula Varun",
+      "admissionNumber": "3374",
+      "contactNumber": "7675080149",
+      "year": "first",
+      "group": "mpc",
+      "medium": "english",
+      "batchYear": "2024-25"
+    },
+    {
+      "studentId": "136",
+      "studentName": "Bhaswani Revathi Sri",
+      "admissionNumber": "3371",
+      "contactNumber": "9398996835",
+      "year": "first",
+      "group": "bipc",
+      "medium": "english",
+      "batchYear": "2024-25"
+    },
+    {
+      "studentId": "160",
+      "studentName": "Bandaru Anil",
+      "admissionNumber": "3436",
+      "contactNumber": "8340804656",
+      "year": "first",
+      "group": "cec",
+      "medium": "english",
+      "batchYear": "2024-25"
+    },
+    {
+      "studentId": "1",
+      "studentName": "Nittala Sree Vyshnavi",
+      "admissionNumber": "3285",
+      "contactNumber": "9949259454",
+      "year": "second",
+      "group": "mpc",
+      "medium": "english",
+      "batchYear": "2024-25"
+    },
+    {
+      "studentId": "4",
+      "studentName": "Ithamraju Nishitha",
+      "admissionNumber": "3301",
+      "contactNumber": "8919559621",
+      "year": "second",
+      "group": "cec",
+      "medium": "english",
+      "batchYear": "2024-25"
+    },
+    {
+      "studentId": "10",
+      "studentName": "Kotte Rakshan",
+      "admissionNumber": "3293",
+      "contactNumber": "9866929837",
+      "year": "second",
+      "group": "mec",
+      "medium": "english",
+      "batchYear": "2024-25"
+    },
+    {
+      "studentId": "36",
+      "studentName": "Penuballi Prathima Sri",
+      "admissionNumber": "3324",
+      "contactNumber": "8008086773",
+      "year": "second",
+      "group": "bipc",
+      "medium": "english",
+      "batchYear": "2024-25"
+    },
+    {
+      "studentId": "45632",
+      "studentName": "jffgh",
+      "admissionNumber": "2564",
+      "contactNumber": "7896541236",
+      "year": "first",
+      "group": "mpc",
+      "medium": "telugu",
+      "batchYear": "2024-25"
+    },
+    {
+      "studentId": "45632",
+      "studentName": "jffgh",
+      "admissionNumber": "2564",
+      "contactNumber": "7896541236",
+      "year": "first",
+      "group": "mpc",
+      "medium": "telugu",
+      "batchYear": "2024-25"
+    },
+    {
+      "studentId": "47896",
+      "studentName": "hggfyt",
+      "admissionNumber": "5632",
+      "contactNumber": "4569871236",
+      "year": "first",
+      "group": "mpc",
+      "medium": "telugu",
+      "batchYear": "2024-25"
+    },
+    {
+      "studentId": "47896",
+      "studentName": "hggfyt",
+      "admissionNumber": "5632",
+      "contactNumber": "4569871236",
+      "year": "first",
+      "group": "mpc",
+      "medium": "telugu",
+      "batchYear": "2024-25"
+    },
+   {
+    "studentId": "47568",
+    "studentName": "hjutgf",
+    "admissionNumber": "2156",
+    "contactNumber": "7548962135",
+    "year": "second",
+    "group": "bipc",
+    "medium": "english",
+    "batchYear": "2024-25"
+  },
+  {
+    "studentId": "48965",
+    "studentName": "kiuyt",
+    "admissionNumber": "2458",
+    "contactNumber": "7812365495",
+    "year": "first",
+    "group": "bipc",
+    "medium": "telugu",
+    "batchYear": "2024-25"
+  },
+  {
+    "studentId": "24089",
+    "studentName": "sghhj",
+    "admissionNumber": "2589",
+    "contactNumber": "7485691234",
+    "year": "second",
+    "group": "mec",
+    "medium": "telugu",
+    "batchYear": "2024-25"
+  }
+  ]

@@ -1,0 +1,203 @@
+Project Structure (Directory and File Organization):
+
+your-project/
+├── preload.js
+├── main.js
+├── index.html
+├── login/
+│   ├── login.js
+│   └── login.html
+├── sidebar/
+│   ├── sidebar.js
+│   ├── sidebar.html
+│   ├── sidebar.styles.css
+│   └── studentsLoader.js
+├── students/
+│   ├── students.js         (Orchestration module)
+│   ├── students.html       (Students tab HTML)
+│   ├── studentsData.js     (Data fetching, filtering, CRUD)
+│   ├── studentsUI.js       (Students tab specific UI rendering)
+│   ├── studentsForm.js     (Form handling)
+│   └── studentsEvents.js   (Event binding)
+├── attendance/
+│   ├── attendance.js       (Attendance tab logic)
+│   ├── attendanceUI.js     (Attendance tab specific UI rendering)
+│   └── ... (other files)
+├── fees/
+│   ├── fees.js             (Fees tab logic)
+│   ├── feesUI.js           (Fees tab specific UI rendering)
+│   └── ... (other files)
+├── marks/
+│   ├── marks.js            (Marks tab logic)
+│   ├── marksUI.js          (Marks tab specific UI rendering)
+│   └── ... (other files)
+├── utils/
+│   ├── uiUtils.js          (UI related utilities like pagination, visibility)
+│   └── dataUtils.js        (Data related utilities)
+├── database/
+│   └── database.js         (Database interaction)
+└── styles/
+    └── global.css         (Global styles)
+Module Responsibilities (Students Module):
+
+1. students/students.js (Orchestration):
+
+initializeStudentsPage(): Initializes the Students page.
+filterAndRenderStudents(page, limit) (Rendering coordination part): Coordinates filtering and rendering by calling functions from the data and UI modules.
+Handles initial page setup.
+2. students/studentsData.js (Data Operations):
+
+fetchStudentsFromLocalDisk(): Fetches student data.
+filterStudents(students, filters): Filters student data.
+sortData(data, key, ascending): Sorts student data.
+deleteSelectedStudents(students): Deletes selected students.
+getSelectedValues(checkboxes): Retrieves selected checkbox values.
+CRUD operations (addStudent, updateStudent).
+Data transformation functions.
+3. students/studentsUI.js (Students Tab UI):
+
+renderStudentList(students): Renders the student list table.
+renderRows(students): Renders the rows of the student list table.
+updateTableBody(tbody, students): Updates the table body with sorted student data.
+displayStudentData(studentId): Displays student details.
+handleEditButtonClick(event): Handles edit button clicks.
+Handles student list rendering and details display.
+4. students/studentsForm.js (Form Handling):
+
+createFormField({ ... }): Creates form fields.
+renderStudentForm(container, isEdit, studentData): Renders the student form.
+gatherStudentData(): Collects student data from the form.
+handleFormSubmit(event): Handles form submission.
+validateForm(studentData): Validates form data.
+displayFormErrors(errors): Displays form errors.
+initializeFormValues(): Initializes form values.
+5. students/studentsEvents.js (Event Binding):
+
+Attaches event listeners to:
+Tab buttons.
+Checkboxes.
+Student list rows.
+Delete button.
+Edit button.
+attachRowClickEvents(): Attaches row click events.
+handleRowClick(event): Handles row clicks.
+stopPropagation(event): Stops event propagation.
+window.electron.receive('updateSuccess', () => { ... }): Handles Electron updates.
+6. utils/uiUtils.js (UI Utilities):
+
+addPaginationControls(): Adds pagination controls.
+renderPaginationButtons(): Renders pagination buttons.
+calculatePageNumbers(): Calculates page numbers.
+Pagination variables (currentPage, studentsPerPage, totalStudents, totalPages).
+toggleVisibility({ show = [], hide = [] }): Toggles visibility.
+setActiveTab({ activeButton, inactiveButton, visibility = { show: [], hide: [] }): Sets active tab.
+7. utils/dataUtils.js (Data Utilities):
+
+createOptions(options): Creates select options.
+capitalizeFirstLetter(str): Capitalizes first letters.
+calculateDateYearsAgo(yearsAgo): Calculates dates.
+8. Global/Root Level:
+
+getElementsByDataAttribute(attribute): Selects elements by data attribute.
+elements (Consider moving to a more specific scope or module).
+YEAR_OPTIONS, GROUP_OPTIONS, etc. (Consider moving to students/studentsData.js).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Module Responsibilities:
+
+1. students/students.js (Orchestration):
+
+Imports functions from other students sub-modules.
+Initializes the Students tab.
+Calls functions to:
+Fetch and filter student data.
+Render the UI.
+Handle form submissions.
+Attach event listeners.
+2. students/studentsData.js (Data Operations):
+
+Exports functions for:
+Fetching student data (fetchStudentsFromLocalDisk).
+Filtering student data (filterStudents).
+CRUD operations (addStudent, updateStudent, deleteStudent).
+Data transformation for other tabs (e.g., transformStudentsForAttendance).
+3. students/studentsUI.js (Students Tab UI):
+
+Imports data from students/studentsData.js and utilities from utils/uiUtils.js.
+Exports functions for:
+Rendering the student list for the Students tab.
+Creating and managing modals or dialogs specific to the students tab.
+Updating UI elements for the students tab.
+4. students/studentsForm.js (Form Handling):
+
+Exports functions for:
+Rendering the student form (renderStudentForm).
+Handling form submissions (handleFormSubmit).
+Form validation (validateForm).
+Populating form fields (populateForm).
+Creating form fields (createFormField).
+5. students/studentsEvents.js (Event Binding):
+
+Imports functions from other students sub-modules.
+Attaches event listeners to:
+Buttons.
+Filters.
+Form elements.
+Delegates event handling to functions in studentsData.js, studentsUI.js, and studentsForm.js.
+6. attendance/attendance.js, fees/fees.js, marks/marks.js (Tab-Specific Logic):
+
+Imports data from students/studentsData.js and UI rendering functions from corresponding UI modules.
+Handles tab-specific logic:
+Fetching data.
+Rendering the UI.
+Handling user interactions.
+7. attendance/attendanceUI.js, fees/feesUI.js, marks/marksUI.js (Tab-Specific UI):
+
+Imports data from students/studentsData.js and utilities from utils/uiUtils.js.
+Exports functions for:
+Rendering UI elements specific to each tab.
+8. utils/uiUtils.js (UI Utilities):
+
+Exports functions for:
+Pagination logic.
+Other UI-related utilities.
+9. utils/dataUtils.js (Data Utilities):
+
+Exports functions for:
+Data manipulation utilities.
+Data validation utilities.
+10. sidebar/studentsLoader.js (Dynamic Loading):
+
+Handles the dynamic loading of the students module when the "Students" tab is clicked.
+Checks if the module is already loaded to prevent duplicate executions.
+11. database/database.js (Database Interaction):
+
+Exports functions for database operations.
+Implementation Plan:
+
+Create Directory Structure: Set up the directories and files as outlined above.
+Refactor students Module First:
+Start by extracting functions into studentsData.js, studentsForm.js, studentsUI.js and studentsEvents.js.
+Update students.js to import and use the exported functions.
+Create utils Module:
+Move pagination and other utility functions into utils/uiUtils.js.
+Create Tab-Specific Modules:
+Create the attendance, fees, and marks modules, following the same pattern.
+Refactor sidebar Module:
+Create a studentsLoader.js inside of the sidebar folder to handle the students module loading.
+Test Thoroughly: After each step, test the code to ensure that it works correctly.
