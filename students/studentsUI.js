@@ -1,9 +1,8 @@
-import { fetchStudentsFromLocalDisk, updatePagination, filterAndRenderStudents, students, } from './studentsData.js';
+import { fetchStudentsFromLocalDisk, filterAndRenderStudents, students, } from './studentsData.js';
 import { calculatePageNumbers } from '../utils/uiUtils.js';
-import { showEditStudent } from './students.js';
+import { showEditStudent } from './studentsForm.js';
 import { renderStudentForm } from './studentsForm.js';
-import { currentPage, studentsPerPage, totalPages } from '../utils/uiUtils.js';
-import { displayStudentData, renderRows, attachRowClickEvents } from './studentsUI.js';
+import { currentPage, studentsPerPage, totalStudents, totalPages } from '../utils//uiUtils.js';
 import { toggleVisibility, getElementsByDataAttribute } from '../utils/uiUtils.js';
 import { sortData } from '../utils/uiUtils.js';
 import { deleteSelectedStudents } from './studentsEvents.js';
@@ -11,12 +10,6 @@ import { deleteSelectedStudents } from './studentsEvents.js';
 
 let elements = getElementsByDataAttribute('data-element');
 let sortedStudents = [];
-
-
-export function toggleVisibility({ show = [], hide = [] }) {
-    show.forEach((element) => element?.classList.remove('hidden'));
-    hide.forEach((element) => element?.classList.add('hidden'));
-}
 
 export function setActiveTab({ activeButton, inactiveButton, visibility = { show: [], hide: [] } }) {
     toggleVisibility(visibility);
@@ -52,17 +45,6 @@ export function showAddStudent() {
     renderStudentForm(elements.addStudentFormContainer);
 }
 
-export function showEditStudent(studentData) {
-    setActiveTab({
-        activeButton: elements.addStudentTabButton,
-        inactiveButton: elements.allStudentsTabButton,
-        visibility: {
-            show: [elements.addStudentTab],
-            hide: [elements.allStudentsTab]
-        }   
-    });
-}
-
 export function displayStudentData(studentId) {
     const studentIdNumber = parseInt(studentId, 10);
     const student = students.find(student => student.studentId === studentIdNumber);
@@ -95,7 +77,7 @@ export function displayStudentData(studentId) {
  // Ensure the edit button is dynamically fetched from elements
 elements.studentDataContainer.addEventListener("click", handleEditButtonClick);
 
-export handleEditButtonClick(event) {
+export function handleEditButtonClick(event) {
     if (event.target.dataset.element === "editStudentButton") {
         const studentId = event.target.dataset.studentId;
         const student = students.find(student => student.studentId === parseInt(studentId, 10));

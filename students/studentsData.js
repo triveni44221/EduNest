@@ -36,20 +36,6 @@ export const BATCH_YEAR_OPTIONS = Array.from({ length: 16 }, (_, i) => {
     return { value: `${year}-${year + 1}`, label: `${year}-${year + 1}` };
 });
 
-export let currentPage = 1;
-export const studentsPerPage = 30;
-export let totalStudents = 0;
-export let totalPages = 0
-
-
-export function gatherStudentData() {
-    const studentData = {};
-    document.querySelectorAll('[data-element]').forEach((input) => {
-        studentData[input.getAttribute('data-element')] = input.value.trim();
-    });
-    return studentData;
-}
-
 export function validateForm(studentData) {
     const errors = {};
     elements = getElementsByDataAttribute('data-element');

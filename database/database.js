@@ -151,8 +151,6 @@ export function addStudent(studentData) {
     }
 }
 
-
-
 export function fetchStudents(limit = 30, offset = 0) {
     limit = parseInt(limit, 10);
     offset = parseInt(offset, 10);
@@ -160,7 +158,6 @@ export function fetchStudents(limit = 30, offset = 0) {
     const query = `SELECT * FROM students LIMIT ? OFFSET ?`;
     return executeQuery(query, [limit, offset]);
 }
-
 
 export function updateStudent(updatedData) {  // Take updatedData ONLY
     try {

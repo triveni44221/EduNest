@@ -12,6 +12,11 @@ export function capitalizeFirstLetter(str) {
     return str.replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
+export function toggleVisibility({ show = [], hide = [] }) {
+    show.forEach((element) => element?.classList.remove('hidden'));
+    hide.forEach((element) => element?.classList.add('hidden'));
+}
+
 export let currentPage = 1;
 export const studentsPerPage = 30;
 export let totalStudents = 0;
@@ -40,16 +45,6 @@ export function renderPaginationButtons() {
         });
         paginationContainer.appendChild(button);
     });
-}
-
-
-export function calculatePageNumbers() {
-    // Implement logic to calculate page numbers
-    const pageNumbers = [];
-    for (let i = 1; i <= totalPages; i++) {
-        pageNumbers.push(i);
-    }
-    return pageNumbers;
 }
 
 export function calculatePageNumbers() {
@@ -103,3 +98,4 @@ export function sortData(data, key, ascending = true) {
         return ascending ? comparison : -comparison;
     });
 }
+

@@ -60,14 +60,16 @@ function setupSidebar() {
             content.innerHTML = data;
 
             const script = document.createElement('script');
-            script.src = `${folder}/${page}.js`;
-            script.onload = () => {
-                console.log(`${folder}/${page}.js loaded successfully.`);
-            };
-            script.onerror = () => {
-                console.error(`Failed to load ${folder}/${page}.js.`);
-            };
-            document.body.appendChild(script);
+script.src = `${folder}/${page}.js`;
+script.type = "module"; // ✅ Important: Load as ES module
+script.setAttribute("data-module", page); // Avoid duplicate script loads
+
+// Remove previous script if already loaded
+document.querySelectorAll(`script[data-module="${page}"]`).forEach(s => s.remove());
+
+script.onload = () => console.log(`${folder}/${page}.js loaded successfully.`);
+script.onerror = () => console.error(`Failed to load ${folder}/${page}.js.`);
+document.body.appendChild(script);
 
             updateActiveTab(page);
             if (loadingSpinner) loadingSpinner.style.display = 'none';
