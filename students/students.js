@@ -1,15 +1,14 @@
 
-import { getElementsByDataAttribute } from '../utils/uiUtils.js';
 import { showStudentsTab, showAddStudent } from './studentsUI.js';
 import { filterAndRenderStudents } from './studentsData.js';
 import { renderStudentForm } from './studentsForm.js';
-import { setActiveTab } from './studentsUI.js';
-import { handleFormSubmit } from './studentsEvents.js';
+import { initializeApp } from './studentsData.js';
+import { elements, initializeElements } from './studentsElements.js';
 
+export async function initializeStudentsPage() {
+    initializeElements(); 
+    showStudentsTab();
 
-let elements = getElementsByDataAttribute('data-element');
-
-export function initializeStudentsPage() {
     const checkboxes = [
         elements.firstYearCheckbox,
         elements.secondYearCheckbox,
@@ -19,30 +18,30 @@ export function initializeStudentsPage() {
         elements.cecCheckbox,
     ];
     checkboxes.forEach((checkbox) => {
-        if (checkbox) checkbox.addEventListener('change', filterAndRenderStudents);
+        if (checkbox) {
+            checkbox.addEventListener('change', () => filterAndRenderStudents(1)); 
+        }
     });
-
+    
     if (elements['allStudentsTabButton'] && elements['addStudentTabButton']) {
         elements['allStudentsTabButton'].addEventListener('click', showStudentsTab);
         elements['addStudentTabButton'].addEventListener('click', showAddStudent);
     } else {
         console.error('Tab buttons not found in the DOM.');
     }
-
-    const formContainer = document.getElementById('studentFormContainer');
-    if (formContainer) {
-        renderStudentForm(formContainer, false);
-    } else {
-        console.error('Form container not found!');
-    }
+    
 }
-
-document.addEventListener('DOMContentLoaded', initializeStudentsPage);
-
-window.addEventListener('DOMContentLoaded', () => {
-    elements = getElementsByDataAttribute('data-element');
-
-    if (!studentData.admissionNumber && elements.admissionNumber) {
-        elements.admissionNumber.disabled = true;
-    }
-});
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", async () => {
+        await initializeApp(); // Call initializeApp before initializeStudentsPage
+        await initializeStudentsPage();
+        await filterAndRenderStudents(1); // Call without arguments for initial rendering
+        showStudentsTab();
+    });
+} else {
+ 
+    await initializeApp(); // Call initializeApp before initializeStudentsPage
+    await initializeStudentsPage();
+    await filterAndRenderStudents(1); // Call without arguments for initial rendering
+    showStudentsTab();
+}

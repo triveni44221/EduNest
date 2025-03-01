@@ -156,7 +156,10 @@ export function fetchStudents(limit = 30, offset = 0) {
     offset = parseInt(offset, 10);
 
     const query = `SELECT * FROM students LIMIT ? OFFSET ?`;
-    return executeQuery(query, [limit, offset]);
+    console.log("fetchStudents called with limit:", limit, "offset:", offset); // Add this
+    const result = executeQuery(query, [limit, offset]);
+    console.log("executeQuery result:", result); // Add this
+    return result;
 }
 
 export function updateStudent(updatedData) {  // Take updatedData ONLY

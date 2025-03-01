@@ -1,13 +1,9 @@
 // students/studentsData.js
+import { elements } from './studentsElements.js';
 import { capitalizeFirstLetter } from '../utils/uiUtils.js';
-import { getElementsByDataAttribute } from '../utils/uiUtils.js';
-import { updatePagination, renderStudentList } from './studentsUI.js';
-import { currentPage, studentsPerPage, totalStudents, totalPages } from '../utils/uiUtils.js';
-
-
-export let students = [];
-
-let elements = getElementsByDataAttribute('data-element');
+import { renderStudentList } from './studentsUI.js';
+import { currentPage, studentsPerPage, setTotalStudents, getTotalStudents, setTotalPages } from '../utils/uiUtils.js';
+let students = [];
 
 export function createOptions(options) {
     return options.map((option) => ({
@@ -16,7 +12,10 @@ export function createOptions(options) {
     }));
 }
 
-export const YEAR_OPTIONS = createOptions(['First Year', 'Second Year']);
+export const YEAR_OPTIONS = [
+    { label: 'First Year', value: 'first' },
+    { label: 'Second Year', value: 'second' }
+];
 export const GROUP_OPTIONS = createOptions(['MPC', 'BiPC', 'MEC', 'CEC']);
 export const MEDIUM_OPTIONS = createOptions(['English', 'Telugu']);
 export const SECOND_LANGUAGE_OPTIONS = createOptions(['Sanskrit', 'Telugu', 'Hindi', 'English']);
@@ -38,7 +37,6 @@ export const BATCH_YEAR_OPTIONS = Array.from({ length: 16 }, (_, i) => {
 
 export function validateForm(studentData) {
     const errors = {};
-    elements = getElementsByDataAttribute('data-element');
 
     // Validate Student ID if editing
     if (elements.editStudentForm) {
@@ -140,52 +138,97 @@ export function gatherStudentData() {
 export async function fetchStudentsFromLocalDisk() {
     try {
         const result = await window.electron.invoke('fetchStudents');
-        if (result && result.length > 0) {
-            students = result;
-            totalStudents = students.length;
+        
+        if (result && Array.isArray(result)) {
+            setTotalStudents(result.length);
+            return result;
         } else {
-            students = [];
-            totalStudents = 0;
+            console.warn("⚠️ No students found in DB.");
+            setTotalStudents(0);
+            return [];
         }
     } catch (error) {
-        console.error('Error fetching students from local disk:', error);
-        students = [];
-        totalStudents = 0;
+        console.error('❌ Error fetching students from local disk:', error);
+        setTotalStudents(0);
+        return [];
     }
 }
+
 
 export async function initializeApp() {
-    await fetchStudentsFromLocalDisk();
-    updatePagination();
+    try {
+        await fetchStudentsFromLocalDisk(); // Await asynchronous operations
+    } catch (error) {
+        console.error("Error initializing app:", error);
+    }
 }
-
-initializeApp();
 
 export function getSelectedValues(checkboxes) {
-    return checkboxes.filter((checkbox) => checkbox.checked).map((checkbox) => checkbox.value);
+    if (!Array.isArray(checkboxes)) {
+        checkboxes = [checkboxes]; // Convert single element to array
+    }
+    return checkboxes.filter((checkbox) => checkbox?.checked).map((checkbox) => checkbox.value.toLowerCase());
 }
 
-export function filterAndRenderStudents(page = currentPage, limit = studentsPerPage) {
-    const selectedClassYears = getSelectedValues([elements.firstYearCheckbox, elements.secondYearCheckbox]);
-    const selectedGroups = getSelectedValues([elements.mpcCheckbox, elements.bipcCheckbox, elements.mecCheckbox, elements.cecCheckbox]);
 
+export async function filterAndRenderStudents(page = 1, limit = studentsPerPage) {
+  
+    if (!elements || !elements.studentListContainer) {
+        console.error("Elements not initialized before calling filterAndRenderStudents");
+        return;
+    }
+    if (typeof page !== "number") {
+        console.warn("Received event instead of page number. Fixing...");
+        console.trace();
+        page = 1;
+    }
+
+    page = Number(page) || 1; // Ensure page is a valid number
+    if (!students || students.length === 0) { 
+        students = await fetchStudentsFromLocalDisk(); 
+    }
+ 
+    const selectedClassYears = getSelectedValues([
+        elements.firstYearCheckbox, 
+        elements.secondYearCheckbox
+    ]);
+    
+    const selectedGroups = getSelectedValues([
+        elements.mpcCheckbox, 
+        elements.bipcCheckbox, 
+        elements.mecCheckbox, 
+        elements.cecCheckbox
+    ]);
+    
     let filteredStudents = students;
+
     if (selectedClassYears.length > 0) {
-        filteredStudents = filteredStudents.filter((student) => selectedClassYears.includes(student.classYear));
-    }
+    
+    filteredStudents = filteredStudents.filter((student) => {
+       
+        return selectedClassYears.includes(student.classYear.toLowerCase());
+    });
+}
+
     if (selectedGroups.length > 0) {
-        filteredStudents = filteredStudents.filter((student) => selectedGroups.includes(student.groupName));
+        filteredStudents = filteredStudents.filter((student) => {
+             return selectedGroups.includes(student.groupName.toLowerCase());
+        });
     }
+   
+    setTotalStudents(filteredStudents.length);
+    setTotalPages(Math.ceil(filteredStudents.length / limit));
 
-    totalStudents = filteredStudents.length;
-    totalPages = Math.ceil(totalStudents / limit);
 
-    const offset = (page - 1) * limit;
-    const paginatedStudents = filteredStudents.slice(offset, offset + limit);
+    const validPage = isNaN(page) ? 1 : Math.max(1, page);
+const validLimit = isNaN(limit) ? studentsPerPage : limit;
 
+const offset = (validPage - 1) * validLimit;
+const paginatedStudents = filteredStudents.slice(offset, offset + validLimit);
+   
     if (paginatedStudents.length === 0) {
         elements.studentListContainer.innerHTML = '<p>No students found.</p>';
     } else {
-        renderStudentList(paginatedStudents);
+              renderStudentList(paginatedStudents);
     }
 }

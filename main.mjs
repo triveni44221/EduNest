@@ -73,19 +73,14 @@ function createMainWindow(role) {
     });
 }
 
-function isValidJSON(data) {
-    try {
-        JSON.parse(JSON.stringify(data));
-        return true;
-    } catch (error) {
-        return false;
-    }
-}
-
-// IPC Handlers using modular functions
 ipcMain.handle('addStudent', async (event, studentData) => addStudent(studentData));
 
-ipcMain.handle('fetchStudents', async () => fetchStudents());
+ipcMain.handle('fetchStudents', async () => {
+    console.log("Fetching students...");
+    const students = fetchStudents();
+    console.log("Fetched students:", students);
+    return students;
+});
 
 ipcMain.handle('updateStudent', async (event, updatedStudent) => updateStudent(updatedStudent));
 

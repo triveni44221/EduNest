@@ -1,21 +1,19 @@
-import { fetchStudentsFromLocalDisk, filterAndRenderStudents, students, } from './studentsData.js';
+import { fetchStudentsFromLocalDisk, filterAndRenderStudents } from './studentsData.js';
 import { calculatePageNumbers } from '../utils/uiUtils.js';
 import { showEditStudent } from './studentsForm.js';
 import { renderStudentForm } from './studentsForm.js';
-import { currentPage, studentsPerPage, totalStudents, totalPages } from '../utils//uiUtils.js';
-import { toggleVisibility, getElementsByDataAttribute } from '../utils/uiUtils.js';
-import { sortData } from '../utils/uiUtils.js';
-import { deleteSelectedStudents } from './studentsEvents.js';
-
-
-let elements = getElementsByDataAttribute('data-element');
-let sortedStudents = [];
+import { currentPage, studentsPerPage, totalPages } from '../utils//uiUtils.js';
+import { toggleVisibility} from '../utils/uiUtils.js';
+import { elements, initializeElements } from './studentsElements.js';
+import { formatStudentData } from '../utils//dataUtils.js';
+import { deleteSelectedStudents } from './studentsEvents.js' ;
 
 export function setActiveTab({ activeButton, inactiveButton, visibility = { show: [], hide: [] } }) {
     toggleVisibility(visibility);
     activeButton.classList.add('active');
     inactiveButton.classList.remove('active');
 }
+let students = [];
 
 export async function showStudentsTab() {
     setActiveTab({
@@ -28,9 +26,8 @@ export async function showStudentsTab() {
     });
 
     elements['studentDataContainer'].innerHTML = '';
-    await fetchStudentsFromLocalDisk();
-
-    updatePagination();
+    students = await fetchStudentsFromLocalDisk(); 
+       renderStudentList(students);
 }
 
 export function showAddStudent() {
@@ -42,11 +39,13 @@ export function showAddStudent() {
             hide: [elements.allStudentsTab]
         }
     });
+
+    elements.addStudentFormContainer.innerHTML = "";
     renderStudentForm(elements.addStudentFormContainer);
 }
 
 export function displayStudentData(studentId) {
-    const studentIdNumber = parseInt(studentId, 10);
+       const studentIdNumber = parseInt(studentId, 10);
     const student = students.find(student => student.studentId === studentIdNumber);
 
     if (!student) {
@@ -74,9 +73,6 @@ export function displayStudentData(studentId) {
     `;
 }
 
- // Ensure the edit button is dynamically fetched from elements
-elements.studentDataContainer.addEventListener("click", handleEditButtonClick);
-
 export function handleEditButtonClick(event) {
     if (event.target.dataset.element === "editStudentButton") {
         const studentId = event.target.dataset.studentId;
@@ -87,24 +83,76 @@ export function handleEditButtonClick(event) {
     }
 }
 
+let sortedStudents = [];
+
 export function renderStudentList(students) {
-    // Implement logic to render the student list table
-    let tableHTML = `
-        <table>
-            <thead>
-                <tr>
-                    <th>Student ID</th>
-                    <th>Name</th>
-                    <th>Class Year</th>
-                    <th>Group</th>
-                </tr>
-            </thead>
-            <tbody data-element="studentTableBody">
-            </tbody>
-        </table>
+ 
+    elements.studentListContainer.innerHTML = '';
+    toggleVisibility({ show: [elements.studentListContainer, elements.filtersContainer], hide: [elements.studentDataContainer] });
+
+    if (students.length === 0) {
+        elements.studentListContainer.innerHTML = '<p>No students found.</p>';
+        return;
+    }
+
+    let sortOrder = 'asc';
+    let sortedColumn = null;
+
+    const deleteButton = document.createElement('button');
+    deleteButton.textContent = 'Delete Selected';
+    deleteButton.className = 'delete-button';
+    deleteButton.addEventListener('click', () => deleteSelectedStudents(students));
+
+    const studentTable = document.createElement('table');
+    studentTable.className = 'student-table';
+    const headerRow = `
+        <thead>
+            <tr>
+                <th class="no-sort"><input type="checkbox" data-element="selectAllCheckbox"></th>
+                <th data-column="studentId">ID No</th>
+                <th data-column="studentName">Name</th>
+                <th data-column="admissionNumber">Admn No</th>
+                <th data-column="fatherCell">Contact</th>
+                <th data-column="classYear">Year</th>
+                <th data-column="groupName">Group</th>
+            </tr>
+        </thead>
     `;
-    elements.studentListContainer.innerHTML = tableHTML;
-    renderRows(students);
+    studentTable.innerHTML = headerRow;
+    const tbody = document.createElement('tbody');
+    studentTable.appendChild(tbody);
+
+    elements.studentListContainer.appendChild(deleteButton);
+    elements.studentListContainer.appendChild(studentTable);
+
+    sortedStudents = [...students];
+    updateTableBody(tbody, sortedStudents);
+    
+    studentTable.querySelectorAll('th[data-column]').forEach((header) => {
+        header.addEventListener('click', () => {
+            const column = header.getAttribute('data-column');
+            let sortOrder = header.dataset.sortOrder || 'asc';
+            sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+            header.dataset.sortOrder = sortOrder;
+
+            const ascending = sortOrder === 'asc';
+            sortedStudents = sortData(sortedStudents, column, ascending);
+            updateTableBody(tbody, sortedStudents);
+        });
+    });
+ 
+    const selectAllCheckbox = studentTable.querySelector('input[data-element="selectAllCheckbox"]');
+
+if (selectAllCheckbox) {
+    selectAllCheckbox.addEventListener('change', (event) => {
+        const checkboxes = document.querySelectorAll('.select-student-checkbox');
+        checkboxes.forEach(checkbox => checkbox.checked = event.target.checked);
+    });
+} else {
+    console.error("Select all checkbox not found in the table.");
+}
+    attachRowClickEvents();
+
 }
 
 export function attachRowClickEvents() {
@@ -119,84 +167,7 @@ export function attachRowClickEvents() {
         checkbox.removeEventListener('click', stopPropagation);
         checkbox.addEventListener('click', stopPropagation);
     });
-}
-
-export function addPaginationControls() {
-    const paginationContainer = document.createElement('div');
-    paginationContainer.id = 'pagination-container';
-    paginationContainer.setAttribute('data-element', 'paginationContainer');
-    elements.studentListContainer.parentNode.insertBefore(paginationContainer, elements.studentListContainer.nextSibling);
-
-    elements = getElementsByDataAttribute('data-element');
-
-    renderPaginationButtons();
-}
-
-export function renderPaginationButtons() {
-    elements.paginationContainer.innerHTML = '';
-
-    const firstButton = document.createElement('button');
-    firstButton.textContent = 'First';
-    firstButton.disabled = currentPage === 1;
-    firstButton.addEventListener('click', () => {
-        currentPage = 1;
-        filterAndRenderStudents(currentPage, studentsPerPage);
-        renderPaginationButtons();
-    });
-    elements.paginationContainer.appendChild(firstButton);
-
-    const prevButton = document.createElement('button');
-    prevButton.textContent = 'Previous';
-    prevButton.disabled = currentPage === 1;
-    prevButton.addEventListener('click', () => {
-        currentPage--;
-        filterAndRenderStudents(currentPage, studentsPerPage);
-        renderPaginationButtons();
-    });
-    elements.paginationContainer.appendChild(prevButton);
-
-    const pageNumbers = calculatePageNumbers();
-    pageNumbers.forEach((pageNumber) => {
-        const pageButton = document.createElement('button');
-        pageButton.textContent = pageNumber;
-        pageButton.classList.add('page-number');
-        pageButton.disabled = pageNumber === currentPage;
-        pageButton.addEventListener('click', () => {
-            currentPage = pageNumber;
-            filterAndRenderStudents(currentPage, studentsPerPage);
-            renderPaginationButtons();
-        });
-        elements.paginationContainer.appendChild(pageButton);
-    });
-
-    const nextButton = document.createElement('button');
-    nextButton.textContent = 'Next';
-    nextButton.disabled = currentPage === totalPages;
-    nextButton.addEventListener('click', () => {
-        currentPage++;
-        filterAndRenderStudents(currentPage, studentsPerPage);
-        renderPaginationButtons();
-    });
-    elements.paginationContainer.appendChild(nextButton);
-
-    const lastButton = document.createElement('button');
-    lastButton.textContent = 'Last';
-    lastButton.disabled = currentPage === totalPages;
-    lastButton.addEventListener('click', () => {
-        currentPage = totalPages;
-        filterAndRenderStudents(currentPage, studentsPerPage);
-        renderPaginationButtons();
-    });
-    elements.paginationContainer.appendChild(lastButton);
-
-    // Total Pages Display:
-    const totalPagesSpan = document.createElement('span');
-    totalPagesSpan.textContent = ` / ${totalPages || 1}`;
-    elements.paginationContainer.appendChild(totalPagesSpan);
-}
-
-export function updatePagination() {
-    addPaginationControls();
+    elements.studentDataContainer.addEventListener("click", handleEditButtonClick); //Add event listener here
 }
 
 function handleRowClick(event) {
@@ -210,24 +181,29 @@ function stopPropagation(event) {
 }
 
 function renderRows(students) {
-    return students
-        .map(
-            (student) => `
-        <tr class="student-row" data-id="${student.studentId}">
-            <td><input type="checkbox" class="select-student-checkbox" data-id="${student.studentId}"></td>
-            <td>${student.studentId}</td>
-            <td>${student.studentName}</td>
-            <td>${student.admissionNumber}</td>
-            <td>${student.fatherCell}</td>
-            <td>${student.classYear}</td>
-            <td>${student.groupName}</td>
-        </tr>
-    `
-        )
+   
+    const rowsHtml = students
+        .map((student) => {
+            const formattedStudent = formatStudentData(student);
+
+            return `
+                <tr class="student-row" data-id="${formattedStudent.studentId}">
+                    <td><input type="checkbox" class="select-student-checkbox" data-id="${formattedStudent.studentId}"></td>
+                    <td>${formattedStudent.studentId}</td>
+                    <td>${formattedStudent.studentName}</td>
+                    <td>${formattedStudent.admissionNumber || '—'}</td>
+                    <td>${formattedStudent.fatherCell}</td>
+                    <td>${formattedStudent.classYear}</td>
+                    <td>${formattedStudent.groupName}</td>
+                </tr>
+            `;
+        })
         .join('');
+    return rowsHtml;
 }
 
 export function updateTableBody(tbody, students) {
-    tbody.innerHTML = renderRows(students);
+    const formattedStudents = students.map(formatStudentData); // Apply formatting to all students
+    tbody.innerHTML = renderRows(formattedStudents);
     attachRowClickEvents();
 }

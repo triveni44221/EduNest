@@ -1,7 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
     window.electron.receive('user-role', (role) => {
-        console.log("Received user role:", role);
-        loadSidebar(); // Load sidebar only after receiving the role
+           loadSidebar(); // Load sidebar only after receiving the role
     });
 });
 

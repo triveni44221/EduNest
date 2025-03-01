@@ -3,13 +3,14 @@
     import { displayFormErrors } from './studentsForm.js';
     import { fetchStudentsFromLocalDisk, filterAndRenderStudents } from './studentsData.js';
     import { showStudentsTab, displayStudentData } from './studentsUI.js';
-    import { getElementsByDataAttribute } from '../utils/uiUtils.js';
+    import { elements, initializeElements } from './studentsElements.js';
 
-    let elements = getElementsByDataAttribute("data-element");
+
 
     export async function handleFormSubmit(event) {
         event.preventDefault();
         console.log('handleFormSubmit called');
+        
 
         const studentData = gatherStudentData();
         console.log('studentData:', studentData);
@@ -76,7 +77,7 @@
                 if (result.success) {
                     alert(`${selectedIds.length} student(s) deleted successfully.`);
                     await fetchStudentsFromLocalDisk();
-                    filterAndRenderStudents();
+                    filterAndRenderStudents(1);
                 } else {
                     alert(result.message || 'Failed to delete students.');
                 }
