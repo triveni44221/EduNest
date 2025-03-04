@@ -1,0 +1,48 @@
+
+button {
+    background-color: #284361;
+    color: white;
+    padding: 14px 30px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+    margin-top: 20px;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+.delete-button {
+    background-color: #c9c9c9; /* Background color */
+    color: rgb(12, 12, 12); /* Text color */
+    padding: 12px 25px; /* Comfortable padding */
+    font-size: 18px; /* Larger text for readability */
+    border: none; /* No border */
+    border-radius: 8px; /* Slightly rounded corners */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transitions */
+    max-width: 300px; /* Limit max width to keep it neat */
+    display: block; /* Ensure it's treated as a block element */
+    margin-left: auto;
+}
+
+/* Hover effect */
+.delete-button:hover {
+    background-color: #d32f2f; /* Slightly darker red */
+    transform: scale(1.05); /* Slightly bigger when hovered */
+}
+
+/* Focus style */
+.delete-button:focus {
+    outline: 3px solid #ff4081; /* Highlight with pink border */
+    outline-offset: 3px; /* Offset the focus ring */
+}
+
+/* Active state when clicked */
+.delete-button:active {
+    background-color: #ce4c4c; /* Darker red when clicked */
+    transform: scale(0.98); /* Shrink slightly when clicked */
+}

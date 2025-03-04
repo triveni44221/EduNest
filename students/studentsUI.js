@@ -14,7 +14,7 @@ export function setActiveTab({ activeButton, inactiveButton, visibility = { show
 let students = [];
 
 export function attachEventListeners() {
-    
+    console.log('studentsUI.js: attachEventListeners() start');
     const filterCheckboxes = [
         'firstYearCheckbox', 'secondYearCheckbox', 
         'mpcCheckbox', 'bipcCheckbox', 'mecCheckbox', 'cecCheckbox'
@@ -41,9 +41,11 @@ export function attachEventListeners() {
             console.error(`❌ Element ${id} not found.`);
         }
     });
+    console.log('studentsUI.js: attachEventListeners() end');
 }
 
 export async function showStudentsTab() {
+    console.log('studentsUI.js: showStudentsTab() start');
         attachEventListeners();
 
     if (!elements.allStudentsTabButton || !elements.addStudentTabButton) {
@@ -75,9 +77,11 @@ export async function showStudentsTab() {
     } catch (error) {
         console.error('❌ Error fetching students:', error);
     }
+    console.log('studentsUI.js: showStudentsTab() end');
 }
 
 export function showAddStudent() {
+    console.log('studentsUI.js: showAddStudent() start');
     initializeElements();
 
     if (!elements.addStudentTabButton || !elements.allStudentsTabButton) {
@@ -110,6 +114,7 @@ export function showAddStudent() {
     });
 
     saveFormData();
+    console.log('studentsUI.js: showAddStudent() end');
 }
 
 export function saveFormData() {

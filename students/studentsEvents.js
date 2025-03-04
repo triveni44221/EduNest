@@ -9,9 +9,7 @@
 
     export async function handleFormSubmit(event) {
         event.preventDefault();
-        console.log('handleFormSubmit called');
-        
-
+       
         const studentData = gatherStudentData();
         console.log('studentData:', studentData);
 

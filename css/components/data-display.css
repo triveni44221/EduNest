@@ -1,0 +1,100 @@
+/* components/data-display.css */
+
+
+/* Style for the student information container */
+#studentInfoContainer {
+    background-color: #f9f9f9;
+    padding: 20px;
+    margin: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Header style */
+#studentInfoContainer h3 {
+    color: #2c3e50;
+    font-size: 24px;
+    margin-bottom: 15px;
+}
+
+/* Use CSS Grid for the student details */
+.student-details {
+    display: grid;
+    grid-template-columns: 1fr 2fr; /* 1 for label, 2 for value */
+    gap: 10px; /* Adds space between rows */
+    align-items: center; /* Vertically align items in the center */
+}
+
+/* Style for each label-value pair */
+.student-details .student-detail {
+    display: contents; /* Make each pair a grid item */
+}
+
+.student-details .student-detail strong {
+    font-weight: bold;
+    color: #34495e;
+}
+#studentInfoContainer {
+    display: none;
+}
+
+
+/* Style for the Back button */
+#studentInfoContainer button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 4px;
+    margin-top: 20px;
+    transition: background-color 0.3s ease;
+}
+
+#studentInfoContainer button:hover {
+    background-color: #2980b9;
+}
+
+
+#studentDataContainer {
+    padding: 10px;
+    border: 1px solid #ccc;
+    margin-top: 10px;
+    background-color: #e6e6e6;
+}
+
+/* Dropdown Styling */
+.dropdown {
+    display: none; /* Hidden by default */
+    position: absolute;
+    top: 100%; /* Adjust this value if necessary */
+    left: 0;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    border-radius: 8px;
+    width: 250px; /* Adjust width if needed */
+    z-index: 100; /* Make sure the dropdown appears above other elements */
+    transition: all 0.3s ease-in-out; /* Smooth appearance */
+}
+
+/* Show the dropdown when active */
+.dropdown.show {
+    display: block;
+}
+
+/* Dropdown Item Styling */
+.dropdown-item {
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.dropdown-item:hover {
+    background-color: #f0f0f0;
+}

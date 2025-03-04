@@ -1,6 +1,5 @@
 
 import { showStudentsTab, showAddStudent, attachEventListeners } from './studentsUI.js';
-
 import { initializeApp } from './studentsData.js';
 import { initializeElements } from './studentsElements.js';
 
@@ -18,5 +17,3 @@ isInitialized = true;
 })();
 
 window.registerTabInitializer?.('students', initializeStudentsPage);
-
-initializeApp();

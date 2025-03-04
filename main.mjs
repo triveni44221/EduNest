@@ -15,6 +15,20 @@ const store = new Store();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+function getCssPath(filePath) {
+    return path.join(__dirname, 'css', filePath);
+}
+
+const cssFilePaths = [
+    'base.css', 'layout.css',  'utilities.css',
+    'components/buttons.css', 'components/data-display.css', 
+    'components/forms-tables-filters.css', 'components/navigation.css',
+    'components/tabs-and-authentication.css',    
+];
+
+cssFilePaths.forEach(filePath => {
+    const fullPath = getCssPath(filePath);
+   });
 
 const users = { 
     admin: { password: process.env.ADMIN_PASSWORD, role: 'Admin' },
@@ -37,8 +51,7 @@ function createLoginWindow() {
     });
 
     const loginPath = path.join(__dirname, 'login', 'login.html');
-    const stylesPath = path.join(__dirname, 'styles', 'global.css');
-
+    loginWin.loadFile(loginPath); // Load the login.html file
     loginWin.loadFile(path.join(__dirname, 'login', 'login.html'));
     loginWin.maximize(); 
 

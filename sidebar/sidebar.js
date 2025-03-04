@@ -49,8 +49,6 @@ function setupSidebar() {
 
     const currentPage = window.location.pathname.split('/').pop().split('.').shift();
     updateActiveTab(currentPage);
-
-    
 }
 
 function loadContent(page) {

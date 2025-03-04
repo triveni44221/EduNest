@@ -157,7 +157,7 @@ export async function fetchStudentsFromLocalDisk() {
 
 export async function initializeApp() {
     try {
-        await fetchStudentsFromLocalDisk(); // Await asynchronous operations
+        await fetchStudentsFromLocalDisk(); 
     } catch (error) {
         console.error("Error initializing app:", error);
     }
