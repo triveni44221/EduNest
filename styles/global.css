@@ -695,3 +695,173 @@ input[type="checkbox"]:hover {
 .hidden-checkboxes {
     display: none;
 }
+/* General form styling */
+#addStudentForm {
+    display: flex;
+    flex-direction: column;
+    width: 100%; /* Stretch the form to fill the content area */
+    margin: 20px auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color:  #eef6fa;
+    z-index: 10; /* Ensure the form fields appear above other content */
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Fieldset styling for sections */
+fieldset {
+    border: 0px solid #87bcf8;
+    border-radius: 8px;
+    padding: 40px 15px 15px; /* Add padding at the top to accommodate the legend */
+    margin-bottom: 0px;
+    background-color: #eef6fa;
+    position: relative;
+}
+
+/* Section label styling */
+legend {
+    font-weight: bold;
+    font-size: 18px;
+    color: #1d1d1d;
+    background-color: #82b5ee; /* Light background color */
+    width: 104%;
+    padding: 8px 15px; /* Add some padding to create space around the text */
+    text-align: center;
+    margin: 0 auto; /* Horizontally center the legend */
+    margin-bottom: 50px;
+    position: absolute; /* Allows precise positioning within the fieldset */
+    top: 0px; /* Adjust to place it within the border */
+    left: 50%;
+    transform: translateX(-50%); /* Center horizontally within the fieldset */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Subtle shadow for aesthetics */
+}
+
+
+/* Form rows and groups */
+.form-row {
+    display: flex;
+    flex-wrap: wrap; /* Ensures fields adjust on smaller screens */
+    gap: 20px; /* Add space between fields */
+    margin-top: 15px; /* Adds extra spacing between the legend and the form rows */
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    flex: 1; /* Make each field take equal width */
+    min-width: 180px; /* Prevent fields from getting too narrow */
+    margin-top: 20px; /* Provides consistent spacing between fields */
+    margin-bottom: 5px;
+}
+
+/* Input and select field styling */
+input, select {
+    padding: 8px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 100%;
+    box-sizing: border-box; /* Ensure padding doesn't affect width */
+}
+
+#addStudentForm #studentName,
+#editStudentForm #studentName {
+    width: 400px !important;
+    margin-bottom: 0px; 
+}
+
+/* Special widths for specific fields */
+ #fathersName, #mothersName,
+#fatherOccupation, #motherOccupation,
+#fatherCell, #motherCell,
+#nationality, #religion, #community, #motherTongue, 
+#gender, #dateOfAdmission, #class,
+#group, #medium, #secondLanguage {
+    width: 90%;
+}
+
+/* Label styling */
+label {
+    font-weight: bold;
+    margin-bottom: 5px;
+    display: block;
+}
+
+/* Hover/focus effect for inputs and selects */
+input:hover, select:hover, input:focus, select:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+/* Dropdown Styling */
+.dropdown {
+    display: none; /* Hidden by default */
+    position: absolute;
+    top: 100%; /* Adjust this value if necessary */
+    left: 0;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    border-radius: 8px;
+    width: 250px; /* Adjust width if needed */
+    z-index: 100; /* Make sure the dropdown appears above other elements */
+    transition: all 0.3s ease-in-out; /* Smooth appearance */
+}
+
+/* Show the dropdown when active */
+.dropdown.show {
+    display: block;
+}
+
+/* Dropdown Item Styling */
+.dropdown-item {
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.dropdown-item:hover {
+    background-color: #f0f0f0;
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 768px) {
+    .form-row {
+        flex-direction: column;
+    }
+
+    .form-group {
+        min-width: 100%;
+    }
+}
+.form-row label input[type="radio"] {
+    margin-right: 5px;
+}
+
+.radio-group input[type="radio"] {
+    display: inline-block;
+    margin-right: 10px;
+    transform: scale(0.5); /* Reduce the size by 20% */
+}
+
+/* Style the Permanent Address fields */
+#permanentAddressFields {
+    margin-top: 10px;
+    padding-top: 10px;
+}
+
+/* Style the radio button container */
+.radio-group {
+    margin-top: -12px;
+    display: flex; /* Use flexbox for horizontal layout */
+    align-items: center; /* Vertically align items in the center */
+    transform: translateX(-125px);
+}
+
+/* Style individual radio button labels */
+.radio-group label {
+    margin-right: 15px; /* Add some space between the labels */
+}

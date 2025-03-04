@@ -1,8 +1,6 @@
 import { fetchStudentsFromLocalDisk, filterAndRenderStudents } from './studentsData.js';
-import { calculatePageNumbers } from '../utils/uiUtils.js';
 import { showEditStudent } from './studentsForm.js';
 import { renderStudentForm } from './studentsForm.js';
-import { currentPage, studentsPerPage, totalPages } from '../utils//uiUtils.js';
 import { toggleVisibility} from '../utils/uiUtils.js';
 import { elements, initializeElements } from './studentsElements.js';
 import { formatStudentData } from '../utils//dataUtils.js';
@@ -15,38 +13,123 @@ export function setActiveTab({ activeButton, inactiveButton, visibility = { show
 }
 let students = [];
 
+export function attachEventListeners() {
+    
+    const filterCheckboxes = [
+        'firstYearCheckbox', 'secondYearCheckbox', 
+        'mpcCheckbox', 'bipcCheckbox', 'mecCheckbox', 'cecCheckbox'
+    ];
+
+    filterCheckboxes.forEach(id => {
+        const checkbox = elements[id];
+        if (checkbox) {
+            checkbox.removeEventListener('change', filterAndRenderStudents);
+            checkbox.addEventListener('change', () => filterAndRenderStudents(1));
+        }
+    });
+
+    const tabButtons = {
+        allStudentsTabButton: showStudentsTab,
+        addStudentTabButton: showAddStudent
+    };
+
+    Object.entries(tabButtons).forEach(([id, handler]) => {
+        if (elements[id]) {
+            elements[id].removeEventListener('click', handler);
+            elements[id].addEventListener('click', handler);
+        } else {
+            console.error(`❌ Element ${id} not found.`);
+        }
+    });
+}
+
 export async function showStudentsTab() {
+        attachEventListeners();
+
+    if (!elements.allStudentsTabButton || !elements.addStudentTabButton) {
+        console.error('Students tab elements not found.');
+        return;
+    }
+
     setActiveTab({
-        activeButton: elements['allStudentsTabButton'],
-        inactiveButton: elements['addStudentTabButton'],
+        activeButton: elements.allStudentsTabButton,
+        inactiveButton: elements.addStudentTabButton,
         visibility: {
-            show: [elements['allStudentsTab'], elements['filtersContainer'], elements['studentListContainer']],
-            hide: [elements['addStudentTab'], elements['studentDataContainer']],
+            show: [elements.allStudentsTab, elements.filtersContainer, elements.studentListContainer],
+            hide: [elements.addStudentTab, elements.studentDataContainer],
         },
     });
 
-    elements['studentDataContainer'].innerHTML = '';
-    students = await fetchStudentsFromLocalDisk(); 
-       renderStudentList(students);
+    if (elements.studentDataContainer) {
+        elements.studentDataContainer.innerHTML = '';
+    }
+    try {
+        students = await fetchStudentsFromLocalDisk(); // Ensure students is global
+
+        if (!students || students.length === 0) {
+            console.warn("⚠️ No students found after fetching.");
+        } else {
+            renderStudentList(students); // Renders the table
+            attachRowClickEvents(); // Attach listeners AFTER data loads
+        }
+    } catch (error) {
+        console.error('❌ Error fetching students:', error);
+    }
 }
 
 export function showAddStudent() {
+    initializeElements();
+
+    if (!elements.addStudentTabButton || !elements.allStudentsTabButton) {
+        console.error('Add student tab elements not found.');
+        return;
+    }
+
+    const currentForm = elements.addStudentFormContainer.querySelector('form');
+    const isEditForm = currentForm && currentForm.dataset.formType === 'edit';
+
+    if (isEditForm) {
+        // Clear only if switching from edit to add
+        elements.addStudentFormContainer.innerHTML = '';
+        renderStudentForm(elements.addStudentFormContainer);
+    } else if (!currentForm) {
+        // Render if no form exists
+        renderStudentForm(elements.addStudentFormContainer);
+    }
+
+    // Restore form data unconditionally
+    restoreFormData();
+
     setActiveTab({
         activeButton: elements.addStudentTabButton,
         inactiveButton: elements.allStudentsTabButton,
         visibility: {
             show: [elements.addStudentTab],
-            hide: [elements.allStudentsTab]
-        }
+            hide: [elements.allStudentsTab],
+        },
     });
 
-    elements.addStudentFormContainer.innerHTML = "";
-    renderStudentForm(elements.addStudentFormContainer);
+    saveFormData();
+}
+
+export function saveFormData() {
+    const formData = {};
+    document.querySelectorAll("[data-form-field]").forEach(field => {
+        formData[field.name] = field.value;
+    });
+    localStorage.setItem("addStudentFormData", JSON.stringify(formData));
+}
+export function restoreFormData() {
+    const formData = JSON.parse(localStorage.getItem("addStudentFormData") || "{}");
+    document.querySelectorAll("[data-form-field]").forEach(field => {
+        if (formData[field.name]) {
+            field.value = formData[field.name];
+        }
+    });
 }
 
 export function displayStudentData(studentId) {
-       const studentIdNumber = parseInt(studentId, 10);
-    const student = students.find(student => student.studentId === studentIdNumber);
+       const student = students.find(student => String(student.studentId) === String(studentId));
 
     if (!student) {
         console.error("Student not found for ID:", studentId);
@@ -169,11 +252,23 @@ export function attachRowClickEvents() {
     });
     elements.studentDataContainer.addEventListener("click", handleEditButtonClick); //Add event listener here
 }
-
 function handleRowClick(event) {
     const row = event.currentTarget;
     const studentId = row.getAttribute('data-id');
-    if (studentId) displayStudentData(studentId);
+
+    if (!students || students.length === 0) {
+        console.error("❌ No students found! Check if data is loaded.");
+        return;
+    }
+
+    const student = students.find(s => String(s.studentId) === String(studentId));
+
+    if (!student) {
+        console.warn(`⚠️ Student not found for ID: ${studentId}`);
+        return;
+    }
+
+    displayStudentData(student.studentId);  // Pass the full student object
 }
 
 function stopPropagation(event) {

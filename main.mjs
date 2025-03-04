@@ -39,10 +39,7 @@ function createLoginWindow() {
     const loginPath = path.join(__dirname, 'login', 'login.html');
     const stylesPath = path.join(__dirname, 'styles', 'global.css');
 
-    console.log('Loading login.html from:', loginPath);
-    console.log('Styles path:', stylesPath);
-
-      loginWin.loadFile(path.join(__dirname, 'login', 'login.html'));
+    loginWin.loadFile(path.join(__dirname, 'login', 'login.html'));
     loginWin.maximize(); 
 
     ipcMain.on('loginSuccess', (event, role) => {
@@ -76,9 +73,7 @@ function createMainWindow(role) {
 ipcMain.handle('addStudent', async (event, studentData) => addStudent(studentData));
 
 ipcMain.handle('fetchStudents', async () => {
-    console.log("Fetching students...");
     const students = fetchStudents();
-    console.log("Fetched students:", students);
     return students;
 });
 
