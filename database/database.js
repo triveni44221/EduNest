@@ -15,6 +15,7 @@ const CREATE_STUDENTS_TABLE = `
     CREATE TABLE IF NOT EXISTS students (
     studentId INTEGER PRIMARY KEY, -- ❌ Removed AUTOINCREMENT
     studentName TEXT NOT NULL,
+    gender TEXT NOT NULL,
     admissionNumber INTEGER DEFAULT NULL,  
     dateOfAdmission TEXT NOT NULL,
     classYear TEXT NOT NULL, 
@@ -22,10 +23,6 @@ const CREATE_STUDENTS_TABLE = `
     medium TEXT NOT NULL,
     secondLanguage TEXT NOT NULL,
     batchYear TEXT NOT NULL, 
-    fathersName TEXT NOT NULL,
-    fatherCell TEXT NOT NULL,
-    mothersName TEXT NOT NULL,
-    motherCell TEXT NOT NULL,
     dob TEXT NOT NULL,
     nationality TEXT NOT NULL,
     otherNationality TEXT DEFAULT NULL,
@@ -39,6 +36,12 @@ const CREATE_STUDENTS_TABLE = `
     additionalCell TEXT DEFAULT NULL,
     identificationMark1 TEXT NOT NULL,
     identificationMark2 TEXT DEFAULT NULL,
+    fathersName TEXT NOT NULL,
+    fatherCell TEXT NOT NULL,
+    fatherOccupation TEXT NOT NULL,
+    mothersName TEXT NOT NULL,
+    motherCell TEXT NOT NULL,
+    motherOccupation TEXT NOT NULL,
     hno TEXT NOT NULL,
     street TEXT NOT NULL,
     village TEXT NOT NULL,
@@ -115,25 +118,25 @@ export function addStudent(studentData) {
 
         const stmt = db.prepare(`
             INSERT INTO students (
-                studentId, studentName, admissionNumber, dateOfAdmission, classYear, groupName, medium, secondLanguage,
-                batchYear, fathersName, fatherCell, mothersName, motherCell, dob, nationality, otherNationality, religion, 
+                studentId, studentName, gender, admissionNumber, dateOfAdmission, classYear, groupName, medium, secondLanguage,
+                batchYear, fathersName, fatherCell, fatherOccupation, mothersName, motherCell, motherOccupation, dob, nationality, otherNationality, religion, 
                 community, motherTongue, scholarship, parentsIncome, physicallyHandicapped, aadhaar, additionalCell,
                 identificationMark1, identificationMark2, hno, street, village, mandal, district, state,
                 pincode, qualifyingExam, yearOfExam, hallTicketNumber, gpa
             ) VALUES (
                 ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
-                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
             )
         `);
 
         const result = stmt.run(
-            nextStudentId, studentData.studentName ?? "", studentData.admissionNumber ?? null,
-            studentData.dateOfAdmission ?? null, studentData.classYear ?? "first",
-            studentData.groupName ?? null, studentData.medium ?? "english",
+            nextStudentId, studentData.studentName ?? "", studentData.gender ?? null,
+            studentData.admissionNumber ?? null, studentData.dateOfAdmission ?? null, 
+            studentData.classYear ?? "first", studentData.groupName ?? null, studentData.medium ?? "english",
             studentData.secondLanguage ?? "sanskrit", `${admissionYear}-${nextYear}`,
-            studentData.fathersName ?? null, studentData.fatherCell ?? null,
-            studentData.mothersName ?? null, studentData.motherCell ?? null, studentData.dob ?? null,
-             studentData.nationality ?? "indian", studentData.otherNationality ?? null,
+            studentData.fathersName ?? null, studentData.fatherCell ?? null, studentData.fatherOccupation ?? "no",
+            studentData.mothersName ?? null, studentData.motherCell ?? null, studentData.motherOccupation ?? "no",
+            studentData.dob ?? null, studentData.nationality ?? "indian", studentData.otherNationality ?? null,
             studentData.religion ?? null, studentData.community ?? null, studentData.motherTongue ?? null, 
             studentData.scholarship ?? "no", studentData.parentsIncome ?? '0', 
             studentData.physicallyHandicapped ?? "no", studentData.aadhaar ?? null, studentData.additionalCell ?? null,

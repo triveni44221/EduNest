@@ -1,21 +1,21 @@
 // students/studentsData.js
 import { elements } from './studentsElements.js';
-import { capitalizeFirstLetter } from '../utils/uiUtils.js';
+import { capitalizeFirstLetter, normalizeString } from '../utils/uiUtils.js';
 import { renderStudentList } from './studentsUI.js';
 import { currentPage, studentsPerPage, setTotalStudents, getTotalStudents, setTotalPages } from '../utils/uiUtils.js';
 let students = [];
 
 export function createOptions(options) {
     return options.map((option) => ({
-        value: option.toLowerCase().replace(/\s/g, ''),
+        value: normalizeString(option).replace(/\s/g, ''), 
         label: capitalizeFirstLetter(option),
     }));
 }
-
 export const YEAR_OPTIONS = [
     { label: 'First Year', value: 'first' },
     { label: 'Second Year', value: 'second' }
 ];
+export const GENDER_OPTIONS = createOptions(['Male', 'Female', 'Others']);
 export const GROUP_OPTIONS = createOptions(['MPC', 'BiPC', 'MEC', 'CEC']);
 export const MEDIUM_OPTIONS = createOptions(['English', 'Telugu']);
 export const SECOND_LANGUAGE_OPTIONS = createOptions(['Sanskrit', 'Telugu', 'Hindi', 'English']);
@@ -23,6 +23,7 @@ export const NATIONALITY_OPTIONS = createOptions(['Indian', 'Others']);
 export const SCHOLARSHIP_OPTIONS = createOptions(['Yes', 'No']);
 export const PHYSICALLY_HANDICAPPED_OPTIONS = createOptions(['Yes', 'No']);
 export const QUALIFYING_EXAM_OPTIONS = createOptions(['SSC', 'CBSE', 'ICSE', 'Others']);
+export const OCCUPATION_OPTIONS = createOptions(['Professor', 'Doctor', 'Engineer', 'Farmer', 'Others'].sort() );
 export const PARENTS_INCOME_OPTIONS = [
     { value: '<1.4L', label: 'Less than 1.4 Lakh' },
     { value: '1.4-3Lakh', label: '1.4 - 3 Lakh' },
@@ -89,6 +90,7 @@ export function gatherStudentData() {
     };
     const studentData = {
         studentName: getValue(elements.studentName),
+        gender: getSelectValue(elements.gender),
         admissionNumber: getNumber(elements.admissionNumber),
         dateOfAdmission: getValue(elements.dateOfAdmission),
         classYear: getSelectValue(elements.classYear),
@@ -98,6 +100,8 @@ export function gatherStudentData() {
         batchYear: getSelectValue(elements.batchYear),
         fathersName: getValue(elements.fathersName),
         fatherCell: getValue(elements.fatherCell),
+        fatherOccupation: getSelectValue(elements.fatherOccupation),
+        motherOccupation: getSelectValue(elements.motherOccupation),
         mothersName: getValue(elements.mothersName),
         motherCell: getValue(elements.motherCell),
         dob: getValue(elements.dob),
@@ -129,7 +133,9 @@ export function gatherStudentData() {
     }
 
     if (elements.otherNationality) {
-        studentData.otherNationality = elements.otherNationality.value.trim();
+        studentData.otherNationality = getValue(elements.otherNationality);
+    } else {
+        studentData.otherNationality = null;
     }
 
     return studentData;
@@ -167,12 +173,10 @@ export function getSelectedValues(checkboxes) {
     if (!Array.isArray(checkboxes)) {
         checkboxes = [checkboxes]; // Convert single element to array
     }
-    return checkboxes.filter((checkbox) => checkbox?.checked).map((checkbox) => checkbox.value.toLowerCase());
+    return checkboxes.filter((checkbox) => checkbox?.checked).map((checkbox) => normalizeString(checkbox.value));
 }
 
-
 export async function filterAndRenderStudents(page = 1, limit = studentsPerPage) {
-  
     if (!elements || !elements.studentListContainer) {
         console.error("Elements not initialized before calling filterAndRenderStudents");
         return;
@@ -187,48 +191,29 @@ export async function filterAndRenderStudents(page = 1, limit = studentsPerPage)
     if (!students || students.length === 0) { 
         students = await fetchStudentsFromLocalDisk(); 
     }
- 
-    const selectedClassYears = getSelectedValues([
-        elements.firstYearCheckbox, 
-        elements.secondYearCheckbox
-    ]);
-    
-    const selectedGroups = getSelectedValues([
-        elements.mpcCheckbox, 
-        elements.bipcCheckbox, 
-        elements.mecCheckbox, 
-        elements.cecCheckbox
-    ]);
-    
-    let filteredStudents = students;
 
-    if (selectedClassYears.length > 0) {
-    
-    filteredStudents = filteredStudents.filter((student) => {
-       
-        return selectedClassYears.includes(student.classYear.toLowerCase());
+    // Define filters dynamically
+    const filters = {
+        classYear: getSelectedValues([elements.firstYearCheckbox, elements.secondYearCheckbox]),
+        groupName: getSelectedValues([elements.mpcCheckbox, elements.bipcCheckbox, elements.mecCheckbox, elements.cecCheckbox]),
+        gender: getSelectedValues([elements.maleCheckbox, elements.femaleCheckbox])
+    };
+
+    let filteredStudents = students.filter(student => {
+        return Object.entries(filters).every(([key, selectedValues]) => 
+            selectedValues.length === 0 || selectedValues.includes(normalizeString(student[key]))
+        );
     });
-}
 
-    if (selectedGroups.length > 0) {
-        filteredStudents = filteredStudents.filter((student) => {
-             return selectedGroups.includes(student.groupName.toLowerCase());
-        });
-    }
-   
     setTotalStudents(filteredStudents.length);
     setTotalPages(Math.ceil(filteredStudents.length / limit));
 
-
     const validPage = isNaN(page) ? 1 : Math.max(1, page);
-const validLimit = isNaN(limit) ? studentsPerPage : limit;
-
-const offset = (validPage - 1) * validLimit;
-const paginatedStudents = filteredStudents.slice(offset, offset + validLimit);
+    const validLimit = isNaN(limit) ? studentsPerPage : limit;
+    const offset = (validPage - 1) * validLimit;
+    const paginatedStudents = filteredStudents.slice(offset, offset + validLimit);
    
-    if (paginatedStudents.length === 0) {
-        elements.studentListContainer.innerHTML = '<p>No students found.</p>';
-    } else {
-              renderStudentList(paginatedStudents);
-    }
+    elements.studentListContainer.innerHTML = paginatedStudents.length === 0
+        ? '<p>No students found.</p>'
+        : renderStudentList(paginatedStudents);
 }

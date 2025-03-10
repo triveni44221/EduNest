@@ -15,8 +15,13 @@
     }
 
     export function capitalizeFirstLetter(str) {
-        return str.replace(/\b\w/g, (char) => char.toUpperCase());
+        return str ? str.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase()) : "";
     }
+
+    export function normalizeString(str) {
+        return str ? str.trim().toLowerCase() : "";
+    }
+    
 
     export function toggleVisibility({ show = [], hide = [] }) {
         show.forEach((element) => element?.classList.remove('hidden'));
@@ -180,13 +185,52 @@
 
     export function sortData(data, key, ascending = true) {
         return data.sort((a, b) => {
-            const valueA = parseFloat(a[key] || 0);
-            const valueB = parseFloat(b[key] || 0);
+            const valueA = parseFloat(a[key]) || 0;
+            const valueB = parseFloat(b[key]) || 0;
+    
             const comparison = isNaN(valueA) || isNaN(valueB)
-                ? (a[key] || '').toString().toLowerCase().localeCompare((b[key] || '').toString().toLowerCase())
+                ? normalizeString(a[key]).localeCompare(normalizeString(b[key])) 
                 : valueA - valueB;
+    
             return ascending ? comparison : -comparison;
         });
     }
 
-
+    export function displayStudentPhoto(student, container, defaultPhoto = 'assets/default-photo.png') {
+    
+        return new Promise((resolve) => {  // Wrap function in a Promise
+            if (!student || !student.studentId) {
+                container.innerHTML = `<img src="${defaultPhoto}" alt="Default Student Photo" 
+                    style="width: 150px; height: 150px; object-fit: cover; float: right; border: 1px dashed #ccc;">`;
+                resolve();  // Resolve immediately for missing student
+                return;
+            }
+    
+            if (student.gender && student.gender.toLowerCase() === 'male') {
+                defaultPhoto = 'assets/default-boy.png';
+            } else if (student.gender && student.gender.toLowerCase() === 'female') {
+                defaultPhoto = 'assets/default-girl.png';
+            }
+    
+            const jpegPhotoPath = `http://localhost:3000/student-data/2023/${student.studentId}/photo.jpeg?t=${Date.now()}`;
+    
+            fetch(jpegPhotoPath, { method: 'HEAD' })
+                .then(response => {
+                    if (response.ok) {
+                        container.innerHTML = `<img src="${jpegPhotoPath}" alt="Student Photo" 
+                            style="width: 150px; height: 150px; object-fit: cover; float: right; border: 1px dashed #ccc;">`;
+                    } else {
+                        container.innerHTML = `<img src="${defaultPhoto}" alt="Default Student Photo" 
+                            style="width: 150px; height: 150px; object-fit: cover; float: right; border: 1px dashed #ccc;">`;
+                    }
+                    resolve();  // Ensure Promise is resolved
+                })
+                .catch((error) => {
+                    console.error("Error fetching photo:", error);
+                    container.innerHTML = `<img src="${defaultPhoto}" alt="Default Student Photo" 
+                        style="width: 150px; height: 150px; object-fit: cover; float: right; border: 1px dashed #ccc;">`;
+                    resolve();  // Resolve even on error
+                });
+        });
+    }
+    

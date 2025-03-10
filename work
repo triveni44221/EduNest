@@ -2,4 +2,19 @@
 year of exam validation
 date of admission disabled in edit form.
 
-fater and mothrs occupation, gender fields
+photo size
+
+dfault photos
+
+
+
+
+
+ok here is my code. this is how i want the details to be displayed. and the code needs to be clean and dry and professional
+
+
+photo needs to be displayed in the admission etails on the right. 
+all the other fields in personal details to be displayed 2 details per row except for identification marks which need to be displayed one below the other. 
+parents details - left side fathers and right side mothers
+address - left side present address , right sie permanent address
+and academic details also included in admission details section named and collectiely named basic details.

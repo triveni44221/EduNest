@@ -1,7 +1,7 @@
 import { fetchStudentsFromLocalDisk, filterAndRenderStudents } from './studentsData.js';
 import { showEditStudent } from './studentsForm.js';
 import { renderStudentForm } from './studentsForm.js';
-import { toggleVisibility} from '../utils/uiUtils.js';
+import { toggleVisibility, sortData, normalizeString, capitalizeFirstLetter, displayStudentPhoto} from '../utils/uiUtils.js';
 import { elements, initializeElements } from './studentsElements.js';
 import { formatStudentData } from '../utils//dataUtils.js';
 import { deleteSelectedStudents } from './studentsEvents.js' ;
@@ -14,7 +14,7 @@ export function setActiveTab({ activeButton, inactiveButton, visibility = { show
 let students = [];
 
 export function attachEventListeners() {
-    console.log('studentsUI.js: attachEventListeners() start');
+    
     const filterCheckboxes = [
         'firstYearCheckbox', 'secondYearCheckbox', 
         'mpcCheckbox', 'bipcCheckbox', 'mecCheckbox', 'cecCheckbox'
@@ -41,11 +41,9 @@ export function attachEventListeners() {
             console.error(`❌ Element ${id} not found.`);
         }
     });
-    console.log('studentsUI.js: attachEventListeners() end');
 }
 
 export async function showStudentsTab() {
-    console.log('studentsUI.js: showStudentsTab() start');
         attachEventListeners();
 
     if (!elements.allStudentsTabButton || !elements.addStudentTabButton) {
@@ -77,11 +75,9 @@ export async function showStudentsTab() {
     } catch (error) {
         console.error('❌ Error fetching students:', error);
     }
-    console.log('studentsUI.js: showStudentsTab() end');
 }
 
 export function showAddStudent() {
-    console.log('studentsUI.js: showAddStudent() start');
     initializeElements();
 
     if (!elements.addStudentTabButton || !elements.allStudentsTabButton) {
@@ -114,7 +110,6 @@ export function showAddStudent() {
     });
 
     saveFormData();
-    console.log('studentsUI.js: showAddStudent() end');
 }
 
 export function saveFormData() {
@@ -134,7 +129,7 @@ export function restoreFormData() {
 }
 
 export function displayStudentData(studentId) {
-       const student = students.find(student => String(student.studentId) === String(studentId));
+    const student = students.find(student => String(student.studentId) === String(studentId));
 
     if (!student) {
         console.error("Student not found for ID:", studentId);
@@ -147,18 +142,83 @@ export function displayStudentData(studentId) {
         hide: [elements.studentListContainer, elements.filtersContainer]
     });
 
-    elements.studentDataContainer.innerHTML = `
-        <h3>Student Details</h3>
-        <p><strong>ID:</strong> ${student.studentId}</p>
-        <p><strong>Name:</strong> ${student.studentName}</p>
-        <p><strong>Admission No:</strong> ${student.admissionNumber}</p>
-        <p><strong>Contact:</strong> ${student.fatherCell}</p>
-        <p><strong>Class Year:</strong> ${student.classYear}</p>
-        <p><strong>Group:</strong> ${student.groupName}</p>
-        <p><strong>Medium:</strong> ${student.medium}</p>
-        <p><strong>Batch Year:</strong> ${student.batchYear}</p>
-        <button data-element="editStudentButton" class="edit-button" data-student-id="${student.studentId}">Edit</button>
-    `;
+    const formattedData = formatStudentDetails(student); // Renamed function
+
+
+    // Create a container for the photo
+    const photoContainer = document.createElement('div');
+
+    // Wait for the photo to load before rendering the full HTML
+    displayStudentPhoto(student, photoContainer).then(() => {
+        console.log("photoContainer.innerHTML after displayStudentPhoto:", photoContainer.innerHTML); // Debugging
+
+        const html = `
+            <h3>Student Details</h3>
+            <div style="display: flex; justify-content: space-between;">
+                <div style="flex: 1;">
+                    ${renderStudentSections(formattedData)}
+                </div>
+                <div style="margin-left: 20px; text-align: center;">
+                    ${photoContainer.innerHTML}
+                </div>
+            </div>
+            <button data-element="editStudentButton" class="edit-button" data-student-id="${student.studentId}">Edit</button>
+        `;
+
+        elements.studentDataContainer.innerHTML = html;
+    });
+}
+
+export function formatStudentDetails(student) {
+    const formattedData = new Map();
+
+    Object.entries(student).forEach(([key, value]) => {
+        let formattedValue = value || "N/A";
+
+        // Standardized case handling
+        if (["classYear", "gender"].includes(key)) {
+            formattedValue = capitalizeFirstLetter(normalizeString(value));
+        } else if (key === "groupName") {
+            formattedValue = value ? value.toUpperCase() : "";
+        }
+
+        const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+        formattedData.set(normalizeString(key), { label, value: formattedValue });
+    });
+
+
+    if (student.nationality === "others" && student.otherNationality) {
+        const nationalityItem = formattedData.get("nationality");
+        if (nationalityItem) {
+            nationalityItem.value = student.otherNationality; // Display only otherNationality
+        }
+    }
+
+    return formattedData;
+}
+
+// Function to render student data sections
+function renderStudentSections(formattedData) {
+    const sections = {
+        "Admission Details": ["studentId", "studentName", "admissionNumber", "dateOfAdmission", "classYear", "groupName", "medium", "secondLanguage", "batchYear"],
+        "Personal Details": ["dob", "nationality", "religion", "community", "motherTongue", "scholarship", "parentsIncome", "physicallyHandicapped", "aadhaar", "additionalCell", "identificationMark1", "identificationMark2"],
+        "Parent Details": ["fathersName", "fatherCell",  "fatherOccupation", "mothersName", "motherCell",  "motherOccupation",],
+        "Address Details": ["hno", "street", "village", "mandal", "district", "state", "pincode"],
+        "Academic Details": ["qualifyingExam", "yearOfExam", "hallTicketNumber", "gpa"]
+    };
+
+    return Object.entries(sections)
+        .map(([sectionName, keys]) => {
+            const sectionHtml = keys
+                .map(key => {
+                    const item = formattedData.get(key.toLowerCase()); // Direct lookup
+                    return item ? `<dt>${item.label}:</dt><dd>${item.value}</dd>` : "";
+                })
+                .join("");
+
+            return sectionHtml ? `<div class="student-section"><h4>${sectionName}</h4><dl>${sectionHtml}</dl></div>` : "";
+        })
+        .join("");
 }
 
 export function handleEditButtonClick(event) {

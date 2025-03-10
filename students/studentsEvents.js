@@ -9,6 +9,11 @@
 
     export async function handleFormSubmit(event) {
         event.preventDefault();
+        if (!elements || Object.keys(elements).length === 0) {
+            console.error("Elements object is not initialized!");
+            alert("Form elements not initialized. Please try again.");
+            return;
+        }
        
         const studentData = gatherStudentData();
         console.log('studentData:', studentData);

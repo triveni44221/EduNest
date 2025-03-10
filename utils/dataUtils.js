@@ -1,4 +1,6 @@
 // utils/dataUtils.js
+import { normalizeString, capitalizeFirstLetter } from './uiUtils.js';
+
 export function calculateDateYearsAgo(yearsAgo) {
     const date = new Date();
     date.setFullYear(date.getFullYear() - yearsAgo);
@@ -6,18 +8,10 @@ export function calculateDateYearsAgo(yearsAgo) {
 }
 
 export function formatStudentData(student) {
-    let formattedClassYear;
-    if (student.classYear === 'first') {
-        formattedClassYear = 'First';
-    } else if (student.classYear === 'second') {
-        formattedClassYear = 'Second';
-    } else {
-        formattedClassYear = student.classYear;
-    }
-
     return {
         ...student,
-        classYear: formattedClassYear,
-        groupName: student.groupName ? student.groupName.toUpperCase() : ''
+        classYear: capitalizeFirstLetter(normalizeString(student.classYear)), 
+        groupName: student.groupName ? student.groupName.toUpperCase() : "",
+        gender: normalizeString(student.gender) // Ensure gender is always lowercase for comparisons
     };
 }
