@@ -39,15 +39,6 @@ export const BATCH_YEAR_OPTIONS = Array.from({ length: 16 }, (_, i) => {
 export function validateForm(studentData) {
     const errors = {};
 
-    // Validate Student ID if editing
-    if (elements.editStudentForm) {
-        if (!studentData.studentId) {
-            errors.studentId = 'Student ID is required.';
-        } else if (isNaN(studentData.studentId) || studentData.studentId < 10000 || studentData.studentId > 99999) {
-            errors.studentId = 'Student ID must be a 5-digit number.';
-        }
-    }
-
     if (!studentData.studentName) {
         errors.studentName = 'Student Name is required.';
     }
@@ -137,6 +128,26 @@ export function gatherStudentData() {
     } else {
         studentData.otherNationality = null;
     }
+
+    // Add the permanent address fields
+    if(document.querySelector("#sameNo").checked){
+        studentData.perm_hno = getValue(elements.perm_hno);
+        studentData.perm_street = getValue(elements.perm_street);
+        studentData.perm_village = getValue(elements.perm_village);
+        studentData.perm_mandal = getValue(elements.perm_mandal);
+        studentData.perm_district = getValue(elements.perm_district);
+        studentData.perm_state = getValue(elements.perm_state);
+        studentData.perm_pincode = getNumber(elements.perm_pincode);
+    } else {
+       studentData.perm_hno = null;
+       studentData.perm_street = null;
+       studentData.perm_village = null;
+       studentData.perm_mandal = null;
+       studentData.perm_district = null;
+       studentData.perm_state = null;
+       studentData.perm_pincode = null;
+    }
+
 
     return studentData;
 }

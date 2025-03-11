@@ -49,6 +49,13 @@ const CREATE_STUDENTS_TABLE = `
     district TEXT NOT NULL,
     state TEXT NOT NULL,
     pincode INTEGER NOT NULL, 
+    perm_hno TEXT DEFAULT NULL,
+    perm_street TEXT DEFAULT NULL,
+    perm_village TEXT DEFAULT NULL,
+    perm_mandal TEXT DEFAULT NULL,
+    perm_district TEXT DEFAULT NULL,
+    perm_state TEXT DEFAULT NULL,
+    perm_pincode INTEGER DEFAULT NULL,
     qualifyingExam TEXT NOT NULL,
     yearOfExam INTEGER NOT NULL, 
     hallTicketNumber TEXT NOT NULL,
@@ -119,13 +126,14 @@ export function addStudent(studentData) {
         const stmt = db.prepare(`
             INSERT INTO students (
                 studentId, studentName, gender, admissionNumber, dateOfAdmission, classYear, groupName, medium, secondLanguage,
-                batchYear, fathersName, fatherCell, fatherOccupation, mothersName, motherCell, motherOccupation, dob, nationality, otherNationality, religion, 
-                community, motherTongue, scholarship, parentsIncome, physicallyHandicapped, aadhaar, additionalCell,
-                identificationMark1, identificationMark2, hno, street, village, mandal, district, state,
-                pincode, qualifyingExam, yearOfExam, hallTicketNumber, gpa
+                batchYear, fathersName, fatherCell, fatherOccupation, mothersName, motherCell, motherOccupation, dob, 
+                nationality, otherNationality, religion, community, motherTongue, scholarship, parentsIncome, 
+                physicallyHandicapped, aadhaar, additionalCell, identificationMark1, identificationMark2, hno, street, 
+                village, mandal, district, state, pincode, perm_hno, perm_street, perm_village, perm_mandal, perm_district,
+                perm_state, perm_pincode, qualifyingExam, yearOfExam, hallTicketNumber, gpa
             ) VALUES (
                 ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
-                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
             )
         `);
 
@@ -143,7 +151,9 @@ export function addStudent(studentData) {
             studentData.identificationMark1 ?? null, studentData.identificationMark2 ?? null,
             studentData.hno ?? null, studentData.street ?? null, studentData.village ?? null,
             studentData.mandal ?? null, studentData.district ?? null, studentData.state ?? null,
-            studentData.pincode ?? 0, studentData.qualifyingExam ?? null,
+            studentData.pincode ?? 0, studentData.perm_hno ?? null, studentData.perm_street ?? null,
+            studentData.perm_village ?? null, studentData.perm_mandal ?? null, studentData.perm_district ?? null,
+            studentData.perm_state ?? null, studentData.perm_pincode ?? null, studentData.qualifyingExam ?? null,
             studentData.yearOfExam ?? 0, studentData.hallTicketNumber ?? null, studentData.gpa ?? 0.0
         );
 

@@ -8,7 +8,7 @@ import { setActiveTab } from './studentsUI.js';
 
 
 function createFormField({ label, elementName, type = "text", options = [], required = false, pattern = "", minLength = "", maxLength = "", min = "", max = "", value = ""}) {
-    
+ 
     const formGroup = document.createElement('div');
     formGroup.classList.add('form-group');
     
@@ -78,8 +78,6 @@ export function renderStudentForm(container, isEdit = false, studentData = {}) {
     }
 
     let studentId = studentData && studentData.studentId !== undefined ? studentData.studentId : undefined;
-    let gender = studentData && studentData.gender !== undefined ? studentData.gender : undefined;
-
 
 const currentYear = new Date().getFullYear();
 
@@ -228,31 +226,74 @@ Object.entries(fieldsetGroups).forEach(([groupName, rows], index) => {
         }
     }
     
+    function createPermanentAddressFields() {
+       
+        const permFields = [
+            { label: 'House Number', elementName: 'perm_hno', type: 'text' },
+            { label: 'Street', elementName: 'perm_street', type: 'text' },
+            { label: 'Village', elementName: 'perm_village', type: 'text' },
+            { label: 'Mandal', elementName: 'perm_mandal', type: 'text' },
+            { label: 'District', elementName: 'perm_district', type: 'text' },
+            { label: 'State', elementName: 'perm_state', type: 'text' },
+            { label: 'Pincode', elementName: 'perm_pincode', type: 'text', pattern: '\\d{6}', maxLength: 6 }
+        ];
+    
+        const permanentFieldsContainer = document.createElement('div'); //create a div to hold the fields.
+
+    permFields.forEach(field => {
+        const value = studentData[field.elementName] || '';
+        const fieldElement = createFormField({ ...field, value }); //create form field here.
+        permanentFieldsContainer.appendChild(fieldElement); // add the field to the container.
+    });
+    return permanentFieldsContainer; //return the container.
+    }
+
     if (groupName === 'Address Details') {
         const permanentAddressDiv = document.createElement('div');
 
-        permanentAddressDiv.innerHTML = `
-            <div class="form-row">
-                <label for="sameAsPresent">Is the Permanent Address same as Present Address?</label>
-                <div class="radio-group">
-                    <label><input type="radio" id="sameYes" name="sameAsPresent" value="yes"> Yes</label>
-                    <label><input type="radio" id="sameNo" name="sameAsPresent" value="no"> No</label>
-                </div>
-            </div>
-            <div id="permanentAddressFields" style="display: none;">
-                ${createPermanentAddressFields()}
-            </div>
-        `;
-        fieldset.appendChild(permanentAddressDiv);
+        // Determine if permanent address should be displayed
+    const isSameAsPresent = studentData.perm_hno ? false : true; // If `perm_hno` exists, assume "No" is selected
 
-        // Add event listeners
-        const sameYes = permanentAddressDiv.querySelector('#sameYes');
-        const sameNo = permanentAddressDiv.querySelector('#sameNo');
-        const permanentAddressFields = permanentAddressDiv.querySelector('#permanentAddressFields');
 
-        sameYes.addEventListener('change', () => permanentAddressFields.style.display = 'none');
-        sameNo.addEventListener('change', () => permanentAddressFields.style.display = 'block');
+        // Radio buttons
+    const radioRow = document.createElement('div');
+    radioRow.className = 'form-row';
+    radioRow.innerHTML = `
+    <label for="sameAsPresent">Is the Permanent Address same as Present Address?</label>
+    <div class="radio-group">
+        <label>
+            <input type="radio" id="sameYes" name="sameAsPresent" value="yes" ${isSameAsPresent ? 'checked' : ''}> Yes
+        </label>
+        <label>
+            <input type="radio" id="sameNo" name="sameAsPresent" value="no" ${!isSameAsPresent ? 'checked' : ''}> No
+        </label>
+    </div>
+`;
+    permanentAddressDiv.appendChild(radioRow);
+
+    const permanentFieldsContainer = document.createElement('div');
+    permanentFieldsContainer.id = 'permanentAddressFields';
+    permanentFieldsContainer.style.display = isSameAsPresent ? 'none' : 'block'; // Show if "No" is selected
+    if (!isSameAsPresent) {
+        permanentFieldsContainer.appendChild(createPermanentAddressFields(studentData));
     }
+
+    permanentAddressDiv.appendChild(permanentFieldsContainer);
+    fieldset.appendChild(permanentAddressDiv);
+
+    // Add event listeners
+    const sameYes = permanentAddressDiv.querySelector('#sameYes');
+    const sameNo = permanentAddressDiv.querySelector('#sameNo');
+    const permanentAddressFields = permanentAddressDiv.querySelector('#permanentAddressFields');
+
+    sameYes.addEventListener('change', () => permanentAddressFields.style.display = 'none');
+    sameNo.addEventListener('change', () => {
+        if (!permanentAddressFields.innerHTML.trim()) {
+            permanentAddressFields.appendChild(createPermanentAddressFields(studentData));
+        }
+        permanentAddressFields.style.display = 'block';
+    });
+}
 
     form.appendChild(fieldset);
 });
@@ -265,8 +306,6 @@ submitButton.textContent = isEdit ? 'Update' : 'Submit';
 form.appendChild(submitButton);
 
 container.appendChild(form);
-
-
 
 function initializeFormValues() { 
     
@@ -316,24 +355,6 @@ form.addEventListener('submit', handleFormSubmit);
 return form; 
 }
 
-function createPermanentAddressFields() {
-    const permFields = [
-        { label: 'House Number', elementName: 'perm_hno', type: 'text' },
-        { label: 'Street', elementName: 'perm_street', type: 'text' },
-        { label: 'Village', elementName: 'perm_village', type: 'text' },
-        { label: 'Mandal', elementName: 'perm_mandal', type: 'text' },
-        { label: 'District', elementName: 'perm_district', type: 'text' },
-        { label: 'State', elementName: 'perm_state', type: 'text' },
-        { label: 'Pincode', elementName: 'perm_pincode', type: 'text', pattern: '\\d{6}', maxLength: 6 }
-    ];
-
-    let html = '';
-    permFields.forEach(field => {
-        html += `<div class="form-group">${createFormField(field).innerHTML}</div>`;
-    });
-    return html;
-}
-
 export function showEditStudent(studentData) {
     setActiveTab({
         activeButton: elements.addStudentTabButton,
@@ -345,14 +366,23 @@ export function showEditStudent(studentData) {
     });
 
     localStorage.removeItem("addStudentFormData");
-
+   
     renderStudentForm(elements.addStudentFormContainer, true, studentData);
     initializeElements();
-    const form = document.getElementById('editStudentForm');
-    elements.editStudentForm.dataset.studentId = studentData.studentId;
-    elements.editStudentForm.removeEventListener('submit', handleFormSubmit);
-    elements.editStudentForm.addEventListener('submit', handleFormSubmit);
-  }
+    setTimeout(() => {
+        const form = document.querySelector('[data-element="editStudentForm"]');
+
+        if (form) {
+            form.dataset.studentId = studentData.studentId;
+            form.removeEventListener('submit', handleFormSubmit);
+            form.addEventListener('submit', handleFormSubmit);
+        } else {
+            console.error("Edit student form not found.");
+        }
+    }, 0);
+}
+
+
 
 export function displayFormErrors(errors) {
     for (const field in errors) {
@@ -362,92 +392,3 @@ export function displayFormErrors(errors) {
         }
     }
 }
-
-
-
-/*function createFormField({ label, elementName, type = "text", options = [], required = false, pattern = "", minLength = "", maxLength = "", min = "", max = "", value = ""}) {
-    
-    const formGroup = document.createElement('div');
-    formGroup.classList.add('form-group');
-    
-    const labelElement = document.createElement('label');
-    labelElement.setAttribute('for', elementName);
-    labelElement.textContent = label;
-    formGroup.appendChild(labelElement);
-
-    let inputElement;
-    if (type === 'select') {
-        inputElement = document.createElement('select');
-        
-        const defaultOption = new Option(`Select ${label}`, "", true, true);
-        defaultOption.disabled = true;
-        inputElement.appendChild(defaultOption);
-
-        options.forEach(option => {
-            inputElement.appendChild(new Option(option.label, option.value, false, option.value === value));
-        });
-    } else {
-        inputElement = document.createElement('input');
-        inputElement.type = type;
-
-        // Validation attributes, ensuring maxLength >= minLength
-        const validationAttributes = {
-            pattern,
-            min: min || undefined,
-            max: max || undefined,
-            value: value || ""
-        };
-
-        // Conditionally set minLength and maxLength
-        if (minLength) {
-            validationAttributes.minLength = minLength;
-            if (maxLength && maxLength < minLength) {
-                validationAttributes.maxLength = minLength; // Ensure maxLength is at least minLength
-            } else if (maxLength) {
-                validationAttributes.maxLength = maxLength;
-            }
-        } else if (maxLength) {
-            validationAttributes.maxLength = maxLength;
-        }
-
-        Object.assign(inputElement, validationAttributes);
-
-        if (type === "number") inputElement.step = "0.01";
-
-        if (type === 'text') {
-            inputElement.addEventListener('input', function() {
-                this.value = capitalizeFirstLetter(this.value);
-            });
-        }
-    }
-
-
-    // Common attributes for both input types
-    Object.assign(inputElement, {
-        name: elementName,
-        required,
-        'data-element': elementName,
-        'data-form-field': ''
-    });
-
-    formGroup.appendChild(inputElement);
-
-    const errorMessage = document.createElement('span');
-    errorMessage.classList.add('error-message');
-    errorMessage.setAttribute('data-element', `${elementName}Error`);
-    formGroup.appendChild(errorMessage);
-
-    return formGroup;
-} 
-
-
-
-
-
-
-
-
-
-
-
-    */

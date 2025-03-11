@@ -194,6 +194,17 @@ export function formatStudentDetails(student) {
         }
     }
 
+    // Add permanent address details if they exist
+    if(student.perm_hno){
+        formattedData.set("perm_hno", {label: "Permanent House Number", value: student.perm_hno});
+        formattedData.set("perm_street", {label: "Permanent Street", value: student.perm_street});
+        formattedData.set("perm_village", {label: "Permanent Village", value: student.perm_village});
+        formattedData.set("perm_mandal", {label: "Permanent Mandal", value: student.perm_mandal});
+        formattedData.set("perm_district", {label: "Permanent District", value: student.perm_district});
+        formattedData.set("perm_state", {label: "Permanent State", value: student.perm_state});
+        formattedData.set("perm_pincode", {label: "Permanent Pincode", value: student.perm_pincode});
+    }
+
     return formattedData;
 }
 
@@ -203,7 +214,7 @@ function renderStudentSections(formattedData) {
         "Admission Details": ["studentId", "studentName", "admissionNumber", "dateOfAdmission", "classYear", "groupName", "medium", "secondLanguage", "batchYear"],
         "Personal Details": ["dob", "nationality", "religion", "community", "motherTongue", "scholarship", "parentsIncome", "physicallyHandicapped", "aadhaar", "additionalCell", "identificationMark1", "identificationMark2"],
         "Parent Details": ["fathersName", "fatherCell",  "fatherOccupation", "mothersName", "motherCell",  "motherOccupation",],
-        "Address Details": ["hno", "street", "village", "mandal", "district", "state", "pincode"],
+        "Address Details": ["hno", "street", "village", "mandal", "district", "state", "pincode", "perm_hno", "perm_street", "perm_village", "perm_mandal", "perm_district", "perm_state", "perm_pincode"],
         "Academic Details": ["qualifyingExam", "yearOfExam", "hallTicketNumber", "gpa"]
     };
 
