@@ -1,6 +1,6 @@
 
 import { showStudentsTab, showAddStudent, attachEventListeners } from './studentsUI.js';
-
+import { tabManager } from '../utils/tabManager.js';
 import { initializeApp } from './studentsData.js';
 import { initializeElements } from './studentsElements.js';
 

@@ -356,6 +356,8 @@ function handleRowClick(event) {
         return;
     }
 
+    displayStudentTabs(student); // Pass the full student object to display tabs
+
     displayStudentData(student.studentId);  // Pass the full student object
 }
 

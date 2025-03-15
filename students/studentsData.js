@@ -134,11 +134,9 @@ export function gatherStudentData(perm_same) {
         studentData.otherNationality = null;
     }
     studentData.perm_same = perm_same;
-    console.log("studentData.perm_same:", studentData.perm_same); // Add this line
-
+    console.log("Elements object:", elements);
      // perm_same is added in the handleFormSubmit function.
      if(studentData.perm_same === 0){
-        console.log("perm_hno value:", getValue(elements.perm_hno));
         studentData.perm_hno = getValue(elements.perm_hno);
         studentData.perm_street = getValue(elements.perm_street);
         studentData.perm_village = getValue(elements.perm_village);

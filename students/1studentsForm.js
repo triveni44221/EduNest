@@ -1,4 +1,3 @@
-
 // students/studentsForm.js
 import { YEAR_OPTIONS, GENDER_OPTIONS, GROUP_OPTIONS, MEDIUM_OPTIONS, SECOND_LANGUAGE_OPTIONS, NATIONALITY_OPTIONS, SCHOLARSHIP_OPTIONS, OCCUPATION_OPTIONS, PHYSICALLY_HANDICAPPED_OPTIONS, QUALIFYING_EXAM_OPTIONS, PARENTS_INCOME_OPTIONS, BATCH_YEAR_OPTIONS } from "./studentsData.js";
 import { calculateDateYearsAgo } from "../utils/dataUtils.js";
@@ -6,7 +5,6 @@ import { capitalizeFirstLetter, displayStudentPhoto } from "../utils/uiUtils.js"
 import { elements, initializeElements } from './studentsElements.js';
 import { handleFormSubmit } from './studentsEvents.js';
 import { setActiveTab } from './studentsUI.js';
-
 
 function createFormField({ label, elementName, type = "text", options = [], required = false, pattern = "", minLength = "", maxLength = "", min = "", max = "", value = ""}) {
  
@@ -52,7 +50,7 @@ function createFormField({ label, elementName, type = "text", options = [], requ
         if (maxLength !== "") inputElement.maxLength = maxLength;
         if (min !== "") inputElement.min = min;
         if (max !== "") inputElement.max = max;
-        if (type === "number") inputElement.step = "0.01";
+        if (type === "number") { inputElement.step = elementName === "gpa" ? "0.01" : "1"; }
         inputElement.value = value || ""; 
 
         if (type === 'text') {
@@ -80,77 +78,70 @@ export function renderStudentForm(container, isEdit = false, studentData = {}) {
 
     let studentId = studentData && studentData.studentId !== undefined ? studentData.studentId : undefined;
 
-const currentYear = new Date().getFullYear();
+    const currentYear = new Date().getFullYear();
 
-
-const createField = (label, elementName, type, extra = {}) => ({ label, elementName, type, value: studentData[elementName] || '', ...extra });
-
-const createSelectField = (label, elementName, options, required = true, defaultValue = '', studentData = {}) => {
-    const value = studentData[elementName] !== undefined ? studentData[elementName] : defaultValue;
-    return createField(label, elementName, 'select', { options, required, value });
-};
-const createTextField = (label, elementName, required = true, extra = {}) => 
-    createField(label, elementName, 'text', { required, ...extra });
-
-const createNumberField = (label, elementName, min, max, extra = {}) => 
-    createField(label, elementName, 'number', { min, max, ...extra });
-
-const createDateField = (label, elementName, min, max, extra = {}) => 
-    createField(label, elementName, 'date', { min, max, required: true, ...extra });
-
+    const createField = (label, elementName, type, extra = {}) => ({ label,  elementName, type, value: extra.value !== undefined ? extra.value : '', ...extra, });
+    
+    function createAddressFields(prefix = "", studentData = {}) {
+        return [
+            createField('House Number', `${prefix}hno`, 'text', { value: studentData[`${prefix}hno`] }),
+            createField('Street', `${prefix}street`, 'text', { value: studentData[`${prefix}street`] }),
+            createField('Village', `${prefix}village`, 'text', { value: studentData[`${prefix}village`] }),
+            createField('Mandal', `${prefix}mandal`, 'text', { value: studentData[`${prefix}mandal`] }),
+            createField('District', `${prefix}district`, 'text', { value: studentData[`${prefix}district`] }),
+            createField('State', `${prefix}state`, 'text', { value: studentData[`${prefix}state`] }),
+            createField('Pincode', `${prefix}pincode`, 'text', { pattern: '\\d{6}', maxLength: 6, required: true, value: studentData[`${prefix}pincode`] }),
+        ];
+    }
 const formFields = [
     // Admission Details
-    createTextField('Name of the Student', 'studentName', true, { minLength: 3 }),
-    createSelectField('Gender', 'gender', GENDER_OPTIONS, true, '', studentData),
-    createNumberField('Admission No.', 'admissionNumber', 1000, 9999, { disabled: true }),
-    createDateField('Date of Admission', 'dateOfAdmission', calculateDateYearsAgo(10), new Date().toISOString().split('T')[0], isEdit ? { disabled: true } : {}),
-    createSelectField('Batch Year', 'batchYear', BATCH_YEAR_OPTIONS, true, `${currentYear}-${currentYear + 1}`, studentData),
-    createSelectField('Class Year', 'classYear', YEAR_OPTIONS, true, 'first', studentData),
-    createSelectField('Group', 'groupName', GROUP_OPTIONS, true, '', studentData),
-    createSelectField('Medium', 'medium', MEDIUM_OPTIONS, true, 'english', studentData),
-    createSelectField('Second Language', 'secondLanguage', SECOND_LANGUAGE_OPTIONS, true, 'sanskrit', studentData),
+    createField('Name of the Student', 'studentName', 'text', { minLength: 3, required: true }),
+    createField('Gender', 'gender', 'select', { options: GENDER_OPTIONS, required: true, value: studentData.gender }),
+    createField('Admission No.', 'admissionNumber', 'number', { min: 1000, max: 9999, disabled: true }),
+    createField('Date of Admission', 'dateOfAdmission', 'date', { min: calculateDateYearsAgo(10), max: new Date().toISOString().split('T')[0], required: true, disabled: isEdit }),
+    createField('Batch Year', 'batchYear', 'select', { options: BATCH_YEAR_OPTIONS, required: true, value: studentData.batchYear || `${currentYear}-${currentYear + 1}` }),
+    createField('Class Year', 'classYear', 'select', { options: YEAR_OPTIONS, required: true, value: studentData.classYear || 'first' }),
+    createField('Group', 'groupName', 'select', { options: GROUP_OPTIONS, required: true, value: studentData.groupName }),
+    createField('Medium', 'medium', 'select', { options: MEDIUM_OPTIONS, required: true, value: studentData.medium || 'english' }),
+    createField('Second Language', 'secondLanguage', 'select', { options: SECOND_LANGUAGE_OPTIONS, required: true, value: studentData.secondLanguage || 'sanskrit' }),
 
     // Personal Details
-    createDateField('Date of Birth', 'dob', calculateDateYearsAgo(25), calculateDateYearsAgo(10)),
-    createSelectField('Nationality', 'nationality', NATIONALITY_OPTIONS, true, 'indian', studentData),
-    createTextField('Religion', 'religion'),
-    createTextField('Community', 'community'),
-    createTextField('Mother Tongue', 'motherTongue'),
-    createSelectField('Scholarship', 'scholarship', SCHOLARSHIP_OPTIONS, true, '', studentData),
-    createSelectField("Parent's Annual Income", 'parentsIncome', PARENTS_INCOME_OPTIONS, true, '', studentData),
-    createSelectField('Physically Handicapped', 'physicallyHandicapped', PHYSICALLY_HANDICAPPED_OPTIONS, true, '', studentData),
-    createTextField('Aadhaar (UID)', 'aadhaar', true, { pattern: '\\d{12}', maxLength: 12 }),
-    createTextField('Additional Contact No.', 'additionalCell', false, { pattern: '^[6789]\\d{9}$', maxLength: 10 }),
-    createTextField('Identification Mark 1', 'identificationMark1'),
-    createTextField('Identification Mark 2', 'identificationMark2', false),
+    createField('Date of Birth', 'dob', 'date', { min: calculateDateYearsAgo(25), max: calculateDateYearsAgo(10), required: true }),
+    createField('Nationality', 'nationality', 'select', { options: NATIONALITY_OPTIONS, required: true, value: studentData.nationality || 'indian' }),
+    createField('Religion', 'religion', 'text'),
+    createField('Community', 'community', 'text'),
+    createField('Mother Tongue', 'motherTongue', 'text'),
+    createField('Scholarship', 'scholarship', 'select', { options: SCHOLARSHIP_OPTIONS, required: true, value: studentData.scholarship }),
+    createField("Parent's Annual Income", 'parentsIncome', 'select', { options: PARENTS_INCOME_OPTIONS, required: true, value: studentData.parentsIncome }),
+    createField('Physically Handicapped', 'physicallyHandicapped', 'select', { options: PHYSICALLY_HANDICAPPED_OPTIONS, required: true, value: studentData.physicallyHandicapped }),
+    createField('Aadhaar (UID)', 'aadhaar', 'text', { pattern: '\\d{12}', maxLength: 12, required: true }),
+    createField('Additional Contact No.', 'additionalCell', 'text', { pattern: '^[6789]\\d{9}$', maxLength: 10 }),
+    createField('Identification Mark 1', 'identificationMark1', 'text'),
+    createField('Identification Mark 2', 'identificationMark2', 'text'),
 
     // Parent Details
-    createTextField("Father's Name", 'fathersName', true, { minLength: 3 }),
-    createTextField("Father's Cell No.", 'fatherCell', true, { pattern: '^[6789]\\d{9}$', maxLength: 10 }),
-    createSelectField("Father's Occupation", 'fatherOccupation', OCCUPATION_OPTIONS, true, '', studentData),
-    createTextField("Mother's Name", 'mothersName', true, { minLength: 3 }),
-    createTextField("Mother's Cell No.", 'motherCell', true, { pattern: '^[6789]\\d{9}$', maxLength: 10 }),
-    createSelectField("Mother's Occupation", 'motherOccupation', OCCUPATION_OPTIONS, true, '', studentData),
+    createField("Father's Name", 'fathersName', 'text', { minLength: 3, required: true }),
+    createField("Father's Cell No.", 'fatherCell', 'text', { pattern: '^[6789]\\d{9}$', maxLength: 10, required: true }),
+    createField("Father's Occupation", 'fatherOccupation', 'select', { options: OCCUPATION_OPTIONS, required: true, value: studentData.fatherOccupation }),
+    createField("Mother's Name", 'mothersName', 'text', { minLength: 3, required: true }),
+    createField("Mother's Cell No.", 'motherCell', 'text', { pattern: '^[6789]\\d{9}$', maxLength: 10, required: true }),
+    createField("Mother's Occupation", 'motherOccupation', 'select', { options: OCCUPATION_OPTIONS, required: true, value: studentData.motherOccupation }),
 
-    // Address Details
-    createTextField('House Number', 'hno'),
-    createTextField('Street', 'street'),
-    createTextField('Village', 'village'),
-    createTextField('Mandal', 'mandal'),
-    createTextField('District', 'district'),
-    createTextField('State', 'state'),
-    createTextField('Pincode', 'pincode', true, { pattern: '\\d{6}', maxLength: 6 }),
+    ...createAddressFields("", studentData), // Present Address
 
     // Academic Details
-    createSelectField('Qualifying Exam', 'qualifyingExam', QUALIFYING_EXAM_OPTIONS, true, '', studentData),
-    createNumberField('Year of Exam', 'yearOfExam', 2020, currentYear),
-    createTextField('Hall Ticket Number', 'hallTicketNumber'),
-    createNumberField('GPA', 'gpa', 5, 10, { step: 0.01 }),
+    createField('Qualifying Exam', 'qualifyingExam', 'select', { options: QUALIFYING_EXAM_OPTIONS, required: true, value: studentData.qualifyingExam }),
+    createField('Year of Exam', 'yearOfExam', 'number', { min: 2020, max: currentYear, step: 1 }),
+    createField('Hall Ticket Number', 'hallTicketNumber', 'text'),
+    createField('GPA', 'gpa', 'number', { min: 5, max: 10, step: 0.01 }),
 ];
 
 
 const form = document.createElement('form');
 form.setAttribute('data-element', isEdit ? 'editStudentForm' : 'addStudentForm');
+formFields.forEach(field => {
+    field.value = studentData[field.elementName] || field.value || "";
+});
 form.setAttribute('data-form-type', isEdit ? 'edit' : 'add'); 
 form.removeEventListener('submit', handleFormSubmit);
 
@@ -174,8 +165,6 @@ if (isEdit) {
 
     container.prepend(studentIdContainer); // Place it above the form
 }
-
-
 
 function createFieldset(title, fields) {
     const fieldset = document.createElement('fieldset');
@@ -227,75 +216,80 @@ Object.entries(fieldsetGroups).forEach(([groupName, rows], index) => {
         }
     }
     
-    function createPermanentAddressFields() {
-       
-        const permFields = [
-            { label: 'House Number', elementName: 'perm_hno', type: 'text' },
-            { label: 'Street', elementName: 'perm_street', type: 'text' },
-            { label: 'Village', elementName: 'perm_village', type: 'text' },
-            { label: 'Mandal', elementName: 'perm_mandal', type: 'text' },
-            { label: 'District', elementName: 'perm_district', type: 'text' },
-            { label: 'State', elementName: 'perm_state', type: 'text' },
-            { label: 'Pincode', elementName: 'perm_pincode', type: 'text', pattern: '\\d{6}', maxLength: 6 }
-        ];
-    
-        const permanentFieldsContainer = document.createElement('div'); //create a div to hold the fields.
-
-    permFields.forEach(field => {
-        const value = studentData[field.elementName] || '';
-        const fieldElement = createFormField({ ...field, value }); //create form field here.
-        permanentFieldsContainer.appendChild(fieldElement); // add the field to the container.
-    });
-    return permanentFieldsContainer; //return the container.
+    function createPermanentAddressFields(studentData = {}) {
+        return createAddressFields("perm_", studentData); // Use the same function with a prefix
     }
-
+    
     if (groupName === 'Address Details') {
         const permanentAddressDiv = document.createElement('div');
 
-        // Determine if permanent address should be displayed
-    const isSameAsPresent = studentData.perm_hno ? false : true; // If `perm_hno` exists, assume "No" is selected
+        // Determine the state of the radio buttons
+        let isSameAsPresent = studentData.perm_same === 1 ? true : studentData.perm_same === 0 ? false : null;
 
+        permanentAddressDiv.innerHTML = `
+            <div class="form-row same-address-row">
+                <label for="sameAsPresent">Is the Permanent Address same as Present Address?</label>
+                <div class="radio-group">
+                    <input type="radio" id="sameYes" name="sameAsPresent" value="yes" ${isSameAsPresent === true ? 'checked' : ''}>
+                    <label for="sameYes">Yes</label>
+                    <input type="radio" id="sameNo" name="sameAsPresent" value="no" ${isSameAsPresent === false ? 'checked' : ''}>
+                    <label for="sameNo">No</label>
+                </div>
+            </div>
+        `;
 
-        // Radio buttons
-    const radioRow = document.createElement('div');
-    radioRow.className = 'form-row';
-    radioRow.innerHTML = `
-    <label for="sameAsPresent">Is the Permanent Address same as Present Address?</label>
-    <div class="radio-group">
-        <label>
-            <input type="radio" id="sameYes" name="sameAsPresent" value="yes" ${isSameAsPresent ? 'checked' : ''}> Yes
-        </label>
-        <label>
-            <input type="radio" id="sameNo" name="sameAsPresent" value="no" ${!isSameAsPresent ? 'checked' : ''}> No
-        </label>
-    </div>
-`;
-    permanentAddressDiv.appendChild(radioRow);
+        // Create container for permanent address fields
+        const permanentFieldsContainer = document.createElement('div');
+        permanentFieldsContainer.id = 'permanentAddressFields';
+        permanentFieldsContainer.style.display = isSameAsPresent === false ? 'block' : 'none';
 
-    const permanentFieldsContainer = document.createElement('div');
-    permanentFieldsContainer.id = 'permanentAddressFields';
-    permanentFieldsContainer.style.display = isSameAsPresent ? 'none' : 'block'; // Show if "No" is selected
-    if (!isSameAsPresent) {
-        permanentFieldsContainer.appendChild(createPermanentAddressFields(studentData));
-    }
+        if (isSameAsPresent === false) {
+            // Generate permanent address fields
+            const permAddressFields = createPermanentAddressFields(studentData);
 
-    permanentAddressDiv.appendChild(permanentFieldsContainer);
-    fieldset.appendChild(permanentAddressDiv);
+            // Reuse the existing fieldset creation logic
+            const permFieldset = createFieldset("Permanent Address", [
+                permAddressFields.slice(0, 3), // First row: 3 fields
+                permAddressFields.slice(3, 7)  // Second row: 4 fields
+            ]);
 
-    // Add event listeners
-    const sameYes = permanentAddressDiv.querySelector('#sameYes');
-    const sameNo = permanentAddressDiv.querySelector('#sameNo');
-    const permanentAddressFields = permanentAddressDiv.querySelector('#permanentAddressFields');
-
-    sameYes.addEventListener('change', () => permanentAddressFields.style.display = 'none');
-    sameNo.addEventListener('change', () => {
-        if (!permanentAddressFields.innerHTML.trim()) {
-            permanentAddressFields.appendChild(createPermanentAddressFields(studentData));
+            permanentFieldsContainer.appendChild(permFieldset);
         }
-        permanentAddressFields.style.display = 'block';
-    });
-}
 
+        permanentAddressDiv.appendChild(permanentFieldsContainer);
+        fieldset.appendChild(permanentAddressDiv);
+
+        // Event listeners for radio buttons
+        const sameYes = permanentAddressDiv.querySelector('#sameYes');
+        const sameNo = permanentAddressDiv.querySelector('#sameNo');
+
+        sameYes.addEventListener('change', () => {
+            permanentFieldsContainer.style.display = 'none';
+            // Disable the input fields
+            Array.from(permanentFieldsContainer.querySelectorAll('input, select, textarea')).forEach(field => {
+                field.disabled = true;
+            });
+        });
+
+        sameNo.addEventListener('change', () => {
+            permanentFieldsContainer.innerHTML = ''; // Clear before appending
+
+            // Generate permanent address fields
+            const permAddressFields = createPermanentAddressFields(studentData);
+
+            // Reuse the existing fieldset creation logic
+            const permFieldset = createFieldset("Permanent Address", [
+                permAddressFields.slice(0, 3), // First row: 3 fields
+                permAddressFields.slice(3, 7)  // Second row: 4 fields
+            ]);
+
+            permanentFieldsContainer.appendChild(permFieldset);
+            permanentFieldsContainer.style.display = 'block';
+
+            initializeElements();
+        });
+    }
+    
     form.appendChild(fieldset);
 });
 
@@ -382,8 +376,6 @@ export function showEditStudent(studentData) {
         }
     }, 0);
 }
-
-
 
 export function displayFormErrors(errors) {
     for (const field in errors) {

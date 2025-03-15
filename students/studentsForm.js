@@ -6,7 +6,6 @@ import { elements, initializeElements } from './studentsElements.js';
 import { handleFormSubmit } from './studentsEvents.js';
 import { setActiveTab } from './studentsUI.js';
 
-
 function createFormField({ label, elementName, type = "text", options = [], required = false, pattern = "", minLength = "", maxLength = "", min = "", max = "", value = ""}) {
  
     const formGroup = document.createElement('div');
@@ -51,7 +50,7 @@ function createFormField({ label, elementName, type = "text", options = [], requ
         if (maxLength !== "") inputElement.maxLength = maxLength;
         if (min !== "") inputElement.min = min;
         if (max !== "") inputElement.max = max;
-        if (type === "number") inputElement.step = "0.01";
+        if (type === "number") { inputElement.step = elementName === "gpa" ? "0.01" : "1"; }
         inputElement.value = value || ""; 
 
         if (type === 'text') {
@@ -79,28 +78,21 @@ export function renderStudentForm(container, isEdit = false, studentData = {}) {
 
     let studentId = studentData && studentData.studentId !== undefined ? studentData.studentId : undefined;
 
-const currentYear = new Date().getFullYear();
+    const currentYear = new Date().getFullYear();
 
-
-const createField = (label, elementName, type, extra = {}) => ({
-    label,
-    elementName,
-    type,
-    value: extra.value !== undefined ? extra.value : '', // Use provided value or empty string
-    ...extra,
-});
-function createAddressFields(prefix = "", studentData = {}) {
-    return [
-        createField('House Number', `${prefix}hno`, 'text', { value: studentData[`${prefix}hno`] }),
-        createField('Street', `${prefix}street`, 'text', { value: studentData[`${prefix}street`] }),
-        createField('Village', `${prefix}village`, 'text', { value: studentData[`${prefix}village`] }),
-        createField('Mandal', `${prefix}mandal`, 'text', { value: studentData[`${prefix}mandal`] }),
-        createField('District', `${prefix}district`, 'text', { value: studentData[`${prefix}district`] }),
-        createField('State', `${prefix}state`, 'text', { value: studentData[`${prefix}state`] }),
-        createField('Pincode', `${prefix}pincode`, 'text', { pattern: '\\d{6}', maxLength: 6, required: true, value: studentData[`${prefix}pincode`] }),
-    ];
-}
-
+    const createField = (label, elementName, type, extra = {}) => ({ label,  elementName, type, value: extra.value !== undefined ? extra.value : '', ...extra, });
+    
+    function createAddressFields(prefix = "", studentData = {}) {
+        return [
+            createField('House Number', `${prefix}hno`, 'text', { value: studentData[`${prefix}hno`] }),
+            createField('Street', `${prefix}street`, 'text', { value: studentData[`${prefix}street`] }),
+            createField('Village', `${prefix}village`, 'text', { value: studentData[`${prefix}village`] }),
+            createField('Mandal', `${prefix}mandal`, 'text', { value: studentData[`${prefix}mandal`] }),
+            createField('District', `${prefix}district`, 'text', { value: studentData[`${prefix}district`] }),
+            createField('State', `${prefix}state`, 'text', { value: studentData[`${prefix}state`] }),
+            createField('Pincode', `${prefix}pincode`, 'text', { pattern: '\\d{6}', maxLength: 6, required: true, value: studentData[`${prefix}pincode`] }),
+        ];
+    }
 const formFields = [
     // Admission Details
     createField('Name of the Student', 'studentName', 'text', { minLength: 3, required: true }),
@@ -139,7 +131,7 @@ const formFields = [
 
     // Academic Details
     createField('Qualifying Exam', 'qualifyingExam', 'select', { options: QUALIFYING_EXAM_OPTIONS, required: true, value: studentData.qualifyingExam }),
-    createField('Year of Exam', 'yearOfExam', 'number', { min: 2020, max: currentYear }),
+    createField('Year of Exam', 'yearOfExam', 'number', { min: 2020, max: currentYear, step: 1 }),
     createField('Hall Ticket Number', 'hallTicketNumber', 'text'),
     createField('GPA', 'gpa', 'number', { min: 5, max: 10, step: 0.01 }),
 ];
@@ -230,42 +222,47 @@ Object.entries(fieldsetGroups).forEach(([groupName, rows], index) => {
     
     if (groupName === 'Address Details') {
         const permanentAddressDiv = document.createElement('div');
-    
+
         // Determine the state of the radio buttons
         let isSameAsPresent = studentData.perm_same === 1 ? true : studentData.perm_same === 0 ? false : null;
-    
-        // Radio buttons for "Same as Present Address?"
+
         permanentAddressDiv.innerHTML = `
-            <div class="form-row">
+            <div class="form-row same-address-row">
                 <label for="sameAsPresent">Is the Permanent Address same as Present Address?</label>
                 <div class="radio-group">
-                    <label>
-                        <input type="radio" id="sameYes" name="sameAsPresent" value="yes" ${isSameAsPresent === true ? 'checked' : ''}> Yes
-                    </label>
-                    <label>
-                        <input type="radio" id="sameNo" name="sameAsPresent" value="no" ${isSameAsPresent === false ? 'checked' : ''}> No
-                    </label>
+                    <input type="radio" id="sameYes" name="sameAsPresent" value="yes" ${isSameAsPresent === true ? 'checked' : ''}>
+                    <label for="sameYes">Yes</label>
+                    <input type="radio" id="sameNo" name="sameAsPresent" value="no" ${isSameAsPresent === false ? 'checked' : ''}>
+                    <label for="sameNo">No</label>
                 </div>
             </div>
         `;
-    
+
         // Create container for permanent address fields
         const permanentFieldsContainer = document.createElement('div');
         permanentFieldsContainer.id = 'permanentAddressFields';
         permanentFieldsContainer.style.display = isSameAsPresent === false ? 'block' : 'none';
-    
+
         if (isSameAsPresent === false) {
-            createPermanentAddressFields(studentData).forEach(field => permanentFieldsContainer.appendChild(createFormField(field)));
+            // Generate permanent address fields
+            const permAddressFields = createPermanentAddressFields(studentData);
+
+            // Reuse the existing fieldset creation logic
+            const permFieldset = createFieldset("Permanent Address", [
+                permAddressFields.slice(0, 3), // First row: 3 fields
+                permAddressFields.slice(3, 7)  // Second row: 4 fields
+            ]);
+
+            permanentFieldsContainer.appendChild(permFieldset);
         }
 
-    
         permanentAddressDiv.appendChild(permanentFieldsContainer);
         fieldset.appendChild(permanentAddressDiv);
-    
+
         // Event listeners for radio buttons
         const sameYes = permanentAddressDiv.querySelector('#sameYes');
         const sameNo = permanentAddressDiv.querySelector('#sameNo');
-    
+
         sameYes.addEventListener('change', () => {
             permanentFieldsContainer.style.display = 'none';
             // Disable the input fields
@@ -273,15 +270,23 @@ Object.entries(fieldsetGroups).forEach(([groupName, rows], index) => {
                 field.disabled = true;
             });
         });
-    
+
         sameNo.addEventListener('change', () => {
-            permanentFieldsContainer.innerHTML = '';
-            createPermanentAddressFields(studentData).forEach(field => permanentFieldsContainer.appendChild(createFormField(field)));
+            permanentFieldsContainer.innerHTML = ''; // Clear before appending
+
+            // Generate permanent address fields
+            const permAddressFields = createPermanentAddressFields(studentData);
+
+            // Reuse the existing fieldset creation logic
+            const permFieldset = createFieldset("Permanent Address", [
+                permAddressFields.slice(0, 3), // First row: 3 fields
+                permAddressFields.slice(3, 7)  // Second row: 4 fields
+            ]);
+
+            permanentFieldsContainer.appendChild(permFieldset);
             permanentFieldsContainer.style.display = 'block';
-            // Enable the input fields
-            Array.from(permanentFieldsContainer.querySelectorAll('input, select, textarea')).forEach(field => {
-                field.disabled = false;
-            });
+
+            initializeElements();
         });
     }
     
@@ -371,8 +376,6 @@ export function showEditStudent(studentData) {
         }
     }, 0);
 }
-
-
 
 export function displayFormErrors(errors) {
     for (const field in errors) {

@@ -351,11 +351,16 @@ legend {
     padding-top: 10px;
 }
 
+.same-address-row {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Space between the label and radio buttons */
+}
 .radio-group {
     display: flex;
     align-items: center; /* Align items vertically */
     gap: 15px; /* Space between radio button options */
-    margin-right: 250px; /* Shift the whole group to the left */
+    margin-right: 200px; /* Shift the whole group to the left */
 }
 
 .radio-group label {
@@ -363,11 +368,12 @@ legend {
     align-items: center; /* Ensure label and radio are vertically aligned */
     gap: 5px;
     font-size: 16px; /* Match label text size with other labels */
+    cursor: pointer;
 }
 
 .radio-group input[type="radio"] {
     margin: 0;
-    vertical-align: middle; /* Ensure radio buttons align properly */
+    
     width: 16px; /* Ensure a uniform size */
     height: 16px;
 }
