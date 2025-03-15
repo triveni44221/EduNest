@@ -18,3 +18,10 @@ all the other fields in personal details to be displayed 2 details per row excep
 parents details - left side fathers and right side mothers
 address - left side present address , right sie permanent address
 and academic details also included in admission details section named and collectiely named basic details.
+
+
+
+1-  perm add fields displaying corectly in student details and the i clicked edit . there the fields are correctly populated. now to test . i selected same as present yes button and clicked on update.
+2- now the student details are shown as N/A. and the edit form has yes radio button selected. so far good. now to test again i clicked on no button again and entered different perm field details again to see if they are getting updated.
+3- now when i click on the student row, the student details are still shown N/A and the edit form has 'N'o selected but with empty perm address fields.
+4 - when i clooase the app. open it again. click on edit and enter the perm fields agaian and click updtae correctly saves the data though. but if i repeat the steps from 1 again. same thing the perm fields are not getting updated correctly with the entered details after switching back from yes to no

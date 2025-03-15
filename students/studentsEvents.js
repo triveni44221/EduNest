@@ -5,18 +5,30 @@
     import { showStudentsTab, displayStudentData } from './studentsUI.js';
     import { elements, initializeElements } from './studentsElements.js';
 
-
-
     export async function handleFormSubmit(event) {
         event.preventDefault();
+        console.log("Form submitted");
         if (!elements || Object.keys(elements).length === 0) {
-            console.error("Elements object is not initialized!");
-            alert("Form elements not initialized. Please try again.");
-            return;
+            console.error("Elements object is not initialized! Attempting to initialize...");
+            initializeElements(); 
+    
+            // Re-check after attempting initialization
+            if (!elements || Object.keys(elements).length === 0) {
+                alert("Form elements could not be initialized. Please refresh the page and try again.");
+                return;
+            }
         }
        
-        const studentData = gatherStudentData();
-        console.log('studentData:', studentData);
+        const sameAsPresentRadio = document.querySelector('input[name="sameAsPresent"]:checked');
+        let perm_same = null; // Initialize to null
+    
+        if (sameAsPresentRadio) {
+            perm_same = sameAsPresentRadio.value === 'yes' ? 1 : 0; // Set to 1 or 0 if a selection is made
+        }
+
+        const studentData = gatherStudentData(perm_same);
+    
+        studentData.perm_same = perm_same; // Add perm_same to studentData
 
         const errors = validateForm(studentData);
         console.log('errors:', errors);

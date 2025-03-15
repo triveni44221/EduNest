@@ -61,15 +61,10 @@ export function validateForm(studentData) {
         errors.otherNationality = "Nationality is required when 'Others' is selected.";
     }
 
-    // Validate perm_same
-    if (studentData.perm_same === null) {
-        errors.perm_same = "Please select whether the permanent address is the same as the present address.";
-    }
-
     return errors;
 }
 
-export function gatherStudentData(perm_same) {
+export function gatherStudentData() {
     const getValue = (element) => element?.value?.trim() || '';
     const getNumber = (element) => Number(element?.value?.trim()) || null;
     const getSelectValue = (element) => {
@@ -133,12 +128,9 @@ export function gatherStudentData(perm_same) {
     } else {
         studentData.otherNationality = null;
     }
-    studentData.perm_same = perm_same;
-    console.log("studentData.perm_same:", studentData.perm_same); // Add this line
 
-     // perm_same is added in the handleFormSubmit function.
-     if(studentData.perm_same === 0){
-        console.log("perm_hno value:", getValue(elements.perm_hno));
+    // Add the permanent address fields
+    if(document.querySelector("#sameNo").checked){
         studentData.perm_hno = getValue(elements.perm_hno);
         studentData.perm_street = getValue(elements.perm_street);
         studentData.perm_village = getValue(elements.perm_village);
@@ -146,16 +138,16 @@ export function gatherStudentData(perm_same) {
         studentData.perm_district = getValue(elements.perm_district);
         studentData.perm_state = getValue(elements.perm_state);
         studentData.perm_pincode = getNumber(elements.perm_pincode);
-        console.log("perm_hno value:", getValue(elements.perm_hno));
     } else {
-        studentData.perm_hno = null;
-        studentData.perm_street = null;
-        studentData.perm_village = null;
-        studentData.perm_mandal = null;
-        studentData.perm_district = null;
-        studentData.perm_state = null;
-        studentData.perm_pincode = null;
+       studentData.perm_hno = null;
+       studentData.perm_street = null;
+       studentData.perm_village = null;
+       studentData.perm_mandal = null;
+       studentData.perm_district = null;
+       studentData.perm_state = null;
+       studentData.perm_pincode = null;
     }
+
 
     return studentData;
 }

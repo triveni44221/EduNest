@@ -8,7 +8,7 @@
     border: 1px solid #ddd;
     box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease-in-out;
-    max-width: 600px; /* Keeps layout compact */
+    max-width:800px; /* Keeps layout compact */
 }
 
 .student-section:hover {
@@ -53,8 +53,6 @@
 }
 
 .edit-button {
-    display: block;
-    margin: 20px auto 0;
     padding: 10px 20px;
     background: #007bff;
     color: white;
@@ -70,8 +68,78 @@
     background: #0056b3;
     transform: translateY(-2px);
 }
+.admission-container {
+    margin-top: 20px; /* Add or adjust this line */
+    margin-bottom: 25px;
+    padding: 20px;
+    border-radius: 8px;
+    background: #ffffff;
+    border: 1px solid #ddd;
+    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease-in-out;
+    max-width: 800px;
+}
 
+.admission-container h4 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #333;
+    margin-top: 0;
+    margin-bottom: 12px;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 8px;
+}
 
+/* Admission Details Grid */
+.admission-details {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.admission-details dl {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+/* Photo Container */
+.photo-container {
+    margin-left: 20px;
+    text-align: center;
+}
+.student-details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px; /* Add some space between header and sections */
+}
+
+/* Student Details Grid (4 Columns) */
+.student-details dl {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+/* Identification Marks Row */
+.identification-mark-row {
+    display: flex;
+    gap: 10px;
+    grid-column: span 4;
+    align-items: center;
+}
+
+/* Identification Label */
+.identification-label {
+    min-width: 188.52px;
+}
+
+/* Identification Value */
+.identification-value {
+    width: 450px;
+}
 /* Dropdown Styling */
 .dropdown {
     display: none; /* Hidden by default */
@@ -130,7 +198,7 @@
     color: #1d1d1d;
     font-weight: bold;
 }
-
+s
 .student-photo-container {
     float: right;
     width: 150px;

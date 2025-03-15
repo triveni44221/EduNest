@@ -8,4 +8,5 @@ export function initializeElements() {
     if (Object.keys(elements).length === 0) {
         console.warn("⚠️ Warning: No elements found with 'data-element' attributes.");
     }
+    console.log("Elements after initialization:", elements);
 }

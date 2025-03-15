@@ -49,8 +49,7 @@ const CREATE_STUDENTS_TABLE = `
     mandal TEXT NOT NULL,
     district TEXT NOT NULL,
     state TEXT NOT NULL,
-    pincode INTEGER NOT NULL,
-    perm_same INTEGER DEFAULT NULL, 
+    pincode INTEGER NOT NULL, 
     perm_hno TEXT DEFAULT NULL,
     perm_street TEXT DEFAULT NULL,
     perm_village TEXT DEFAULT NULL,
@@ -131,11 +130,11 @@ export function addStudent(studentData) {
                 batchYear, fathersName, fatherCell, fatherOccupation, mothersName, motherCell, motherOccupation, dob, 
                 nationality, otherNationality, religion, community, motherTongue, scholarship, parentsIncome, 
                 physicallyHandicapped, aadhaar, additionalCell, identificationMark1, identificationMark2, hno, street, 
-                village, mandal, district, state, pincode,perm_same, perm_hno, perm_street, perm_village, perm_mandal, perm_district,
+                village, mandal, district, state, pincode, perm_hno, perm_street, perm_village, perm_mandal, perm_district,
                 perm_state, perm_pincode, qualifyingExam, yearOfExam, hallTicketNumber, gpa
             ) VALUES (
                 ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
-                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
             )
         `);
 
@@ -153,7 +152,7 @@ export function addStudent(studentData) {
             studentData.identificationMark1 ?? null, studentData.identificationMark2 ?? null,
             studentData.hno ?? null, studentData.street ?? null, studentData.village ?? null,
             studentData.mandal ?? null, studentData.district ?? null, studentData.state ?? null,
-            studentData.pincode ?? 0, studentData.perm_same ?? null, studentData.perm_hno ?? null, studentData.perm_street ?? null,
+            studentData.pincode ?? 0, studentData.perm_hno ?? null, studentData.perm_street ?? null,
             studentData.perm_village ?? null, studentData.perm_mandal ?? null, studentData.perm_district ?? null,
             studentData.perm_state ?? null, studentData.perm_pincode ?? null, studentData.qualifyingExam ?? null,
             studentData.yearOfExam ?? 0, studentData.hallTicketNumber ?? null, studentData.gpa ?? 0.0

@@ -129,6 +129,7 @@ export function restoreFormData() {
 }
 
 export function displayStudentData(studentId) {
+    console.log("displayStudentData called with ID:", studentId);
     const student = students.find(student => String(student.studentId) === String(studentId));
 
     if (!student) {
@@ -142,29 +143,20 @@ export function displayStudentData(studentId) {
         hide: [elements.studentListContainer, elements.filtersContainer]
     });
 
-    const formattedData = formatStudentDetails(student); // Renamed function
+    const formattedData = formatStudentDetails(student);
 
-
-    // Create a container for the photo
     const photoContainer = document.createElement('div');
-
-    // Wait for the photo to load before rendering the full HTML
     displayStudentPhoto(student, photoContainer).then(() => {
-        console.log("photoContainer.innerHTML after displayStudentPhoto:", photoContainer.innerHTML); // Debugging
+        const photoHtml = photoContainer.innerHTML;
 
         const html = `
+            <div class="student-details-header">
             <h3>Student Details</h3>
-            <div style="display: flex; justify-content: space-between;">
-                <div style="flex: 1;">
-                    ${renderStudentSections(formattedData)}
-                </div>
-                <div style="margin-left: 20px; text-align: center;">
-                    ${photoContainer.innerHTML}
-                </div>
-            </div>
             <button data-element="editStudentButton" class="edit-button" data-student-id="${student.studentId}">Edit</button>
-        `;
-
+        </div>
+        ${renderStudentSections(formattedData, photoHtml)}
+    `;
+    
         elements.studentDataContainer.innerHTML = html;
     });
 }
@@ -175,7 +167,6 @@ export function formatStudentDetails(student) {
     Object.entries(student).forEach(([key, value]) => {
         let formattedValue = value || "N/A";
 
-        // Standardized case handling
         if (["classYear", "gender"].includes(key)) {
             formattedValue = capitalizeFirstLetter(normalizeString(value));
         } else if (key === "groupName") {
@@ -186,15 +177,13 @@ export function formatStudentDetails(student) {
         formattedData.set(normalizeString(key), { label, value: formattedValue });
     });
 
-
     if (student.nationality === "others" && student.otherNationality) {
         const nationalityItem = formattedData.get("nationality");
         if (nationalityItem) {
-            nationalityItem.value = student.otherNationality; // Display only otherNationality
+            nationalityItem.value = student.otherNationality;
         }
     }
 
-    // Add permanent address details if they exist
     if(student.perm_hno){
         formattedData.set("perm_hno", {label: "Permanent House Number", value: student.perm_hno});
         formattedData.set("perm_street", {label: "Permanent Street", value: student.perm_street});
@@ -208,26 +197,49 @@ export function formatStudentDetails(student) {
     return formattedData;
 }
 
-// Function to render student data sections
-function renderStudentSections(formattedData) {
+function renderStudentSections(formattedData, photoHtml) {
     const sections = {
         "Admission Details": ["studentId", "studentName", "admissionNumber", "dateOfAdmission", "classYear", "groupName", "medium", "secondLanguage", "batchYear"],
-        "Personal Details": ["dob", "nationality", "religion", "community", "motherTongue", "scholarship", "parentsIncome", "physicallyHandicapped", "aadhaar", "additionalCell", "identificationMark1", "identificationMark2"],
-        "Parent Details": ["fathersName", "fatherCell",  "fatherOccupation", "mothersName", "motherCell",  "motherOccupation",],
-        "Address Details": ["hno", "street", "village", "mandal", "district", "state", "pincode", "perm_hno", "perm_street", "perm_village", "perm_mandal", "perm_district", "perm_state", "perm_pincode"],
-        "Academic Details": ["qualifyingExam", "yearOfExam", "hallTicketNumber", "gpa"]
+        "Academic Details": ["qualifyingExam", "gpa", "yearOfExam", "hallTicketNumber"],
+        "Personal Details": ["dob", "nationality", "religion", "community", "motherTongue", "additionalCell", "scholarship", "parentsIncome", "physicallyHandicapped", "aadhaar", "identificationMark1", "identificationMark2"],
+        "Parent Details": ["fathersName", "mothersName", "fatherCell", "motherCell", "fatherOccupation", "motherOccupation"],
+        "Address Details": ["hno", "perm_hno", "street", "perm_street", "village", "perm_village", "mandal", "perm_mandal", "district", "perm_district", "state", "perm_state", "pincode", "perm_pincode"],
     };
 
     return Object.entries(sections)
         .map(([sectionName, keys]) => {
             const sectionHtml = keys
                 .map(key => {
-                    const item = formattedData.get(key.toLowerCase()); // Direct lookup
-                    return item ? `<dt>${item.label}:</dt><dd>${item.value}</dd>` : "";
+                    const item = formattedData.get(key.toLowerCase());
+                    if (!item) return "";
+
+                    if (key === "identificationMark1" || key === "identificationMark2") {
+                        return `
+                            <div class="identification-mark-row">
+                                <dt class="identification-label">${item.label}:</dt>
+                                <dd class="identification-value">${item.value}</dd>
+                            </div>
+                        `;
+                    }
+
+                    return `<dt>${item.label}:</dt><dd>${item.value}</dd>`;
                 })
                 .join("");
 
-            return sectionHtml ? `<div class="student-section"><h4>${sectionName}</h4><dl>${sectionHtml}</dl></div>` : "";
+            if (sectionName === "Admission Details") {
+                return `
+                    <div class="student-section admission-container">
+                        <h4>${sectionName}</h4>
+                        <div class="admission-details">
+                            <dl>${sectionHtml}</dl>
+                            <div class="photo-container">
+                                ${photoHtml}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            return sectionHtml ? `<div class="student-section student-details"><h4>${sectionName}</h4><dl>${sectionHtml}</dl></div>` : "";
         })
         .join("");
 }
