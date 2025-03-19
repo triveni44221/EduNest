@@ -64,3 +64,17 @@
     background-color: #fff;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
+
+.subtab-button.active {
+    background-color: #69a9ee;
+    color: #fff;
+    font-weight: bold;
+}
+
+.subtab-content {
+    padding: 20px;
+    margin: 15px;
+    border-radius: 12px;
+    background-color: #fff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}

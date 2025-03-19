@@ -1,18 +1,18 @@
-    // utils/uiUtils.js
+import { elements } from "./sharedElements.js";
 
-    export function getElementsByDataAttribute(attribute = 'data-element') {
-        try {
-            const elements = document.querySelectorAll(`[${attribute}]`);
-            return Array.from(elements).reduce((acc, el) => {
-                const key = el.getAttribute(attribute);
-                if (key) acc[key] = el;
-                return acc;
-            }, {});
-        } catch (error) {
-            console.error("Error in getElementsByDataAttribute:", error);
-            return {}; // Return an empty object in case of error
-        }
+export function getElementsByDataAttribute(attribute = "data-element") {
+    try {
+        const elements = document.querySelectorAll(`[${attribute}]`);
+        return Array.from(elements).reduce((acc, el) => {
+            const key = el.getAttribute(attribute);
+            if (key) acc[key] = el;
+            return acc;
+        }, {});
+    } catch (error) {
+        console.error("Error in getElementsByDataAttribute:", error);
+        return {}; // Return an empty object in case of error
     }
+}
 
     export function capitalizeFirstLetter(str) {
         return str ? str.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase()) : "";
@@ -22,7 +22,6 @@
         return str ? str.trim().toLowerCase() : "";
     }
     
-
     export function toggleVisibility({ show = [], hide = [] }) {
         show.forEach((element) => element?.classList.remove('hidden'));
         hide.forEach((element) => element?.classList.add('hidden'));
@@ -86,22 +85,22 @@
     }
 
     export function renderPaginationControls() {
-        if (!elements.studentListContainer || !elements.studentListContainer.parentNode) {
-            console.error("studentListContainer or its parent is undefined.");
+        let paginationContainer = document.getElementById('pagination-container');
+    if (!paginationContainer) {
+        paginationContainer = document.createElement('div');
+        paginationContainer.id = 'pagination-container';
+        paginationContainer.setAttribute('data-element', 'paginationContainer');
+        if (elements.studentListContainer && elements.studentListContainer.parentNode) {
+            elements.studentListContainer.parentNode.insertBefore(paginationContainer, elements.studentListContainer.nextSibling);
+        } else {
+            console.error("studentListContainer or its parent is not defined.");
             return;
         }
-    
-        let paginationContainer = document.getElementById('pagination-container');
-        if (!paginationContainer) {
-            paginationContainer = document.createElement('div');
-            paginationContainer.id = 'pagination-container';
-            paginationContainer.setAttribute('data-element', 'paginationContainer');
-            elements.studentListContainer.parentNode.insertBefore(paginationContainer, elements.studentListContainer.nextSibling);
-        }
-        
-        elements.paginationContainer = paginationContainer; // Ensure it's set
-        renderPaginationButtons();
     }
+
+    elements.paginationContainer = paginationContainer; // Ensure it's set
+    renderPaginationButtons();
+}
     
     export function renderPaginationButtons() {
         if (!elements.paginationContainer) {
@@ -129,25 +128,19 @@
             return button;
         }
     
-        const buttons = [
-            createButton('First', currentPage === 1, () => updatePagination(1)),
-            createButton('Previous', currentPage === 1, () => updatePagination(currentPage - 1))
-        ];
+        if (currentPage > 1) {
+            elements.paginationContainer.appendChild(createButton('< Previous', false, () => updatePagination(currentPage - 1)));
+        }
     
+        // Create buttons based on calculated page numbers
         calculatePageNumbers().forEach((pageNumber) => {
-            buttons.push(createButton(pageNumber, pageNumber === currentPage, () => updatePagination(Number(pageNumber))));
+            elements.paginationContainer.appendChild(createButton(pageNumber, pageNumber === currentPage, () => updatePagination(Number(pageNumber))));
         });
     
-        buttons.push(
-            createButton('Next', currentPage === totalPages, () => updatePagination(currentPage + 1)),
-            createButton('Last', currentPage === totalPages, () => updatePagination(totalPages))
-        );
-    
-        buttons.forEach((button) => elements.paginationContainer.appendChild(button));
-    
-        const totalPagesSpan = document.createElement('span');
-        totalPagesSpan.textContent = ` / ${totalPages}`;
-        elements.paginationContainer.appendChild(totalPagesSpan);
+        // Add 'Next' button if not on the last page
+        if (currentPage < totalPages) {
+            elements.paginationContainer.appendChild(createButton('Next >', false, () => updatePagination(currentPage + 1)));
+        }
     }
     
     function updatePagination(newPage) {

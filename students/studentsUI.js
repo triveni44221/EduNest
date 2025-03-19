@@ -1,64 +1,29 @@
 import { fetchStudentsFromLocalDisk, filterAndRenderStudents } from './studentsData.js';
+import TabManager, { createTabButton, createTabContent } from '../utils/tabManager.js';
+import { initializeEventListeners } from '../utils/eventUtils.js';
 import { showEditStudent } from './studentsForm.js';
 import { renderStudentForm } from './studentsForm.js';
-import { toggleVisibility, sortData, normalizeString, capitalizeFirstLetter, displayStudentPhoto} from '../utils/uiUtils.js';
-import { elements, initializeElements } from './studentsElements.js';
+import { toggleVisibility, sortData, normalizeString, capitalizeFirstLetter, displayStudentPhoto, renderPaginationControls} from '../utils/uiUtils.js';
+import { elements, initializeElements } from '../utils/sharedElements.js';
 import { formatStudentData } from '../utils//dataUtils.js';
 import { deleteSelectedStudents } from './studentsEvents.js' ;
+import { studentTabManager, initializeStudentsPage } from './students.js';
 
-export function setActiveTab({ activeButton, inactiveButton, visibility = { show: [], hide: [] } }) {
-    toggleVisibility(visibility);
-    activeButton.classList.add('active');
-    inactiveButton.classList.remove('active');
-}
 let students = [];
 
-export function attachEventListeners() {
-    
-    const filterCheckboxes = [
-        'firstYearCheckbox', 'secondYearCheckbox', 
-        'mpcCheckbox', 'bipcCheckbox', 'mecCheckbox', 'cecCheckbox'
-    ];
-
-    filterCheckboxes.forEach(id => {
-        const checkbox = elements[id];
-        if (checkbox) {
-            checkbox.removeEventListener('change', filterAndRenderStudents);
-            checkbox.addEventListener('change', () => filterAndRenderStudents(1));
-        }
-    });
-
-    const tabButtons = {
-        allStudentsTabButton: showStudentsTab,
-        addStudentTabButton: showAddStudent
-    };
-
-    Object.entries(tabButtons).forEach(([id, handler]) => {
-        if (elements[id]) {
-            elements[id].removeEventListener('click', handler);
-            elements[id].addEventListener('click', handler);
-        } else {
-            console.error(`❌ Element ${id} not found.`);
-        }
-    });
-}
-
-export async function showStudentsTab() {
-        attachEventListeners();
+export async function showStudentsTab(studentTabManager) {
+    initializeEventListeners(studentTabManager);
 
     if (!elements.allStudentsTabButton || !elements.addStudentTabButton) {
         console.error('Students tab elements not found.');
         return;
     }
-
-    setActiveTab({
-        activeButton: elements.allStudentsTabButton,
-        inactiveButton: elements.addStudentTabButton,
-        visibility: {
-            show: [elements.allStudentsTab, elements.filtersContainer, elements.studentListContainer],
-            hide: [elements.addStudentTab, elements.studentDataContainer],
-        },
-    });
+    // ✅ Ensure tabManager is initialized before switching tabs
+    if (studentTabManager) {
+        studentTabManager.switchTab(elements.allStudentsTabButton);
+    } else {
+        console.error('❌ studentTabManager is not initialized.');
+    }
 
     if (elements.studentDataContainer) {
         elements.studentDataContainer.innerHTML = '';
@@ -77,8 +42,9 @@ export async function showStudentsTab() {
     }
 }
 
-export function showAddStudent() {
+export function showAddStudent(studentTabManager) {
     initializeElements();
+    console.log("showaddstudent called");
 
     if (!elements.addStudentTabButton || !elements.allStudentsTabButton) {
         console.error('Add student tab elements not found.');
@@ -100,15 +66,12 @@ export function showAddStudent() {
     // Restore form data unconditionally
     restoreFormData();
 
-    setActiveTab({
-        activeButton: elements.addStudentTabButton,
-        inactiveButton: elements.allStudentsTabButton,
-        visibility: {
-            show: [elements.addStudentTab],
-            hide: [elements.allStudentsTab],
-        },
-    });
-
+   // Switch to the "Add Student" tab using TabManager
+   if (studentTabManager) {
+    studentTabManager.switchTab(elements.addStudentTabButton);
+} else {
+    console.error('❌ studentTabManager is not initialized.');
+}
     saveFormData();
 }
 
@@ -125,39 +88,6 @@ export function restoreFormData() {
         if (formData[field.name]) {
             field.value = formData[field.name];
         }
-    });
-}
-
-export function displayStudentData(studentId) {
-    console.log("displayStudentData called with ID:", studentId);
-    const student = students.find(student => String(student.studentId) === String(studentId));
-
-    if (!student) {
-        console.error("Student not found for ID:", studentId);
-        elements.studentDataContainer.innerHTML = "<p>Student data not found.</p>";
-        return;
-    }
-
-    toggleVisibility({
-        show: [elements.studentDataContainer],
-        hide: [elements.studentListContainer, elements.filtersContainer]
-    });
-
-    const formattedData = formatStudentDetails(student);
-
-    const photoContainer = document.createElement('div');
-    displayStudentPhoto(student, photoContainer).then(() => {
-        const photoHtml = photoContainer.innerHTML;
-
-        const html = `
-            <div class="student-details-header">
-            <h3>Student Details</h3>
-            <button data-element="editStudentButton" class="edit-button" data-student-id="${student.studentId}">Edit</button>
-        </div>
-        ${renderStudentSections(formattedData, photoHtml)}
-    `;
-    
-        elements.studentDataContainer.innerHTML = html;
     });
 }
 
@@ -249,7 +179,8 @@ export function handleEditButtonClick(event) {
         const studentId = event.target.dataset.studentId;
         const student = students.find(student => student.studentId === parseInt(studentId, 10));
         if (student) {
-            showEditStudent(student);
+            console.log("Calling showEditStudent with:", studentTabManager);
+            showEditStudent(studentTabManager, student);
         }
     }
 }
@@ -323,6 +254,7 @@ if (selectAllCheckbox) {
     console.error("Select all checkbox not found in the table.");
 }
     attachRowClickEvents();
+    renderPaginationControls();
 
 }
 
@@ -340,10 +272,104 @@ export function attachRowClickEvents() {
     });
     elements.studentDataContainer.addEventListener("click", handleEditButtonClick); //Add event listener here
 }
+export function displayStudentData(studentId) {
+    const student = students.find(student => String(student.studentId) === String(studentId));
+
+    if (!student) {
+        console.error("Student not found for ID:", studentId);
+        elements.studentDataContainer.innerHTML = "<p>Student data not found.</p>";
+        return;
+    }
+
+    // Hide filters and student list, show student details
+    toggleVisibility({
+        show: [elements.studentDataContainer],
+        hide: [elements.studentListContainer, elements.filtersContainer, elements.paginationContainer]
+    });
+
+    // Initialize student tabs (which will load basic details when clicked)
+    displayStudentTabs(student);
+}
+
+function displayStudentTabs(student) {
+    console.log("📌 Running displayStudentTabs for student:", student);
+
+    const studentDataContainer = elements.studentDataContainer;
+    if (!studentDataContainer) {
+        console.error("❌ studentDataContainer not found!");
+        return;
+    }
+
+    // Clear previous content
+    studentDataContainer.innerHTML = "";
+
+    // Create a container for tabs and tab content
+    const tabContainer = document.createElement("div");
+    tabContainer.classList.add("tab-container");
+
+    const contentContainer = document.createElement("div");
+    contentContainer.classList.add("tab-content-container");
+
+    // Tab configuration (IDs should match existing logic)
+    const tabConfig = [
+        { id: 'basicDetailsTab', label: 'Basic Details' },
+        { id: 'feeTab', label: 'Fee' },
+        { id: 'academicsTab', label: 'Academics' },
+        { id: 'attendanceTab', label: 'Attendance' },
+        { id: 'certificatesTab', label: 'Certificates' }
+    ];
+
+    // Generate tabs and contents
+    const tabButtons = [];
+    const tabContents = [];
+
+    tabConfig.forEach(({ id, label }) => {
+        const button = createTabButton(id, label);
+        tabButtons.push(button);
+        tabContainer.appendChild(button);
+
+        const content = createTabContent(id + "Content");
+        tabContents.push(content);
+        contentContainer.appendChild(content);
+    });
+
+    // Append tabs and content to the container
+    studentDataContainer.appendChild(tabContainer);
+    studentDataContainer.appendChild(contentContainer);
+
+    // Initialize TabManager for dynamic switching
+    new TabManager(tabButtons, tabContents, tabButtons[0]);
+
+    // Load Basic Details content when the tab is clicked
+    tabButtons[0].addEventListener("click", () => loadBasicDetailsContent(student, tabContents[0]));
+
+    // Auto-click Basic Details to load content on render
+    tabButtons[0].click();
+}
+
+function loadBasicDetailsContent(student, contentContainer) {
+    if (contentContainer.innerHTML.trim() !== "") return; // Prevent reloading
+
+    const formattedData = formatStudentDetails(student);
+    const photoContainer = document.createElement('div');
+
+    displayStudentPhoto(student, photoContainer).then(() => {
+        const photoHtml = photoContainer.innerHTML;
+
+        contentContainer.innerHTML = `
+            <div class="student-details-header">
+                <h3>Student Details</h3>
+                <button data-element="editStudentButton" class="edit-button" data-student-id="${student.studentId}">Edit</button>
+            </div>
+            ${renderStudentSections(formattedData, photoHtml)}
+        `;
+    });
+}
+
 function handleRowClick(event) {
     const row = event.currentTarget;
     const studentId = row.getAttribute('data-id');
-
+    console.log(`🖱 Row clicked! Student ID: ${studentId}`);
     if (!students || students.length === 0) {
         console.error("❌ No students found! Check if data is loaded.");
         return;
@@ -355,10 +381,10 @@ function handleRowClick(event) {
         console.warn(`⚠️ Student not found for ID: ${studentId}`);
         return;
     }
+    console.log("📌 Calling displayStudentTabs...");
 
-    displayStudentTabs(student); // Pass the full student object to display tabs
+    displayStudentData(studentId); // Pass the full student object to display tabs
 
-    displayStudentData(student.studentId);  // Pass the full student object
 }
 
 function stopPropagation(event) {

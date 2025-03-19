@@ -1,10 +1,11 @@
 // students/studentsForm.js
 import { YEAR_OPTIONS, GENDER_OPTIONS, GROUP_OPTIONS, MEDIUM_OPTIONS, SECOND_LANGUAGE_OPTIONS, NATIONALITY_OPTIONS, SCHOLARSHIP_OPTIONS, OCCUPATION_OPTIONS, PHYSICALLY_HANDICAPPED_OPTIONS, QUALIFYING_EXAM_OPTIONS, PARENTS_INCOME_OPTIONS, BATCH_YEAR_OPTIONS } from "./studentsData.js";
 import { calculateDateYearsAgo } from "../utils/dataUtils.js";
+import  TabManager  from '../utils/tabManager.js';
 import { capitalizeFirstLetter, displayStudentPhoto } from "../utils/uiUtils.js"; 
-import { elements, initializeElements } from './studentsElements.js';
+import { elements, initializeElements } from '../utils/sharedElements.js';
 import { handleFormSubmit } from './studentsEvents.js';
-import { setActiveTab } from './studentsUI.js';
+
 
 function createFormField({ label, elementName, type = "text", options = [], required = false, pattern = "", minLength = "", maxLength = "", min = "", max = "", value = ""}) {
  
@@ -350,15 +351,22 @@ form.addEventListener('submit', handleFormSubmit);
 return form; 
 }
 
-export function showEditStudent(studentData) {
-    setActiveTab({
-        activeButton: elements.addStudentTabButton,
-        inactiveButton: elements.allStudentsTabButton,
-        visibility: {
-            show: [elements.addStudentTab],
-            hide: [elements.allStudentsTab],
-        },
-    });
+export function showEditStudent(studentTabManager, studentData) {
+    console.log("showEditStudent called", studentTabManager);
+     // Ensure tabManager is initialized
+     if (!studentTabManager) {
+        console.error('❌ studentTabManager is not initialized.');
+        return;
+    }
+    console.log("Type of studentTabManager:", typeof studentTabManager);
+    console.log("Instance Check:", studentTabManager instanceof TabManager);
+    if (typeof studentTabManager.switchTab !== "function") {
+        console.error('❌ studentTabManager does not have switchTab function.');
+        console.error('Received:', studentTabManager);
+        return;
+    }
+    // Switch to the "Add Student" tab using TabManager
+    studentTabManager.switchTab(elements.addStudentTabButton);
 
     localStorage.removeItem("addStudentFormData");
    

@@ -3,7 +3,9 @@
     import { displayFormErrors } from './studentsForm.js';
     import { fetchStudentsFromLocalDisk, filterAndRenderStudents } from './studentsData.js';
     import { showStudentsTab, displayStudentData } from './studentsUI.js';
-    import { elements, initializeElements } from './studentsElements.js';
+    import { elements, initializeElements } from '../utils/sharedElements.js';
+    import { studentTabManager, initializeStudentsPage } from './students.js';
+
 
     export async function handleFormSubmit(event) {
         event.preventDefault();
@@ -48,7 +50,7 @@
                     event.target.reset();
                     await fetchStudentsFromLocalDisk();
                     filterAndRenderStudents();
-                    showStudentsTab();
+                    showStudentsTab(studentTabManager);
                 } else {
                     alert(result.message || 'Failed to add student.');
                 }
@@ -62,7 +64,7 @@
                     await fetchStudentsFromLocalDisk();
                     filterAndRenderStudents();
                     displayStudentData(studentData.studentId);
-                    showStudentsTab();
+                    showStudentsTab(studentTabManager);
                 } else {
                     alert(result.message || 'Failed to update student.');
                 }
@@ -72,7 +74,7 @@
             alert('An error occurred while submitting the form.');
         }
     }
-
+    
     export async function deleteSelectedStudents(students) {
         const selectedCheckboxes = document.querySelectorAll('.select-student-checkbox:checked');
     

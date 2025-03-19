@@ -1,17 +1,34 @@
-
-import { showStudentsTab, showAddStudent, attachEventListeners } from './studentsUI.js';
-import { tabManager } from '../utils/tabManager.js';
+import { showStudentsTab} from './studentsUI.js';
+import { initializeEventListeners } from '../utils/eventUtils.js';
+import  TabManager  from '../utils/tabManager.js';
 import { initializeApp } from './studentsData.js';
-import { initializeElements } from './studentsElements.js';
+import { initializeElements } from '../utils/sharedElements.js';
 
 let isInitialized = false; 
+export let studentTabManager;
 
-export async function initializeStudentsPage() {
-    initializeElements();  
-isInitialized = true;
-    showStudentsTab();
-    attachEventListeners(); 
-}
+
+    export async function initializeStudentsPage() {
+        initializeElements(); 
+
+    const tabButtons = [
+        document.querySelector('[data-element="allStudentsTabButton"]'),
+        document.querySelector('[data-element="addStudentTabButton"]')
+    ];
+    const tabContents = [
+        document.querySelector('[data-element="allStudentsTab"]'),
+        document.querySelector('[data-element="addStudentTab"]')
+    ];
+
+    studentTabManager = new TabManager(tabButtons, tabContents);
+
+    initializeEventListeners(studentTabManager);
+
+    isInitialized = true;
+    showStudentsTab(studentTabManager);
+
+    }
+ 
 
 (async function initialize() {
     await initializeApp();

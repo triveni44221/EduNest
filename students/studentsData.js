@@ -1,6 +1,6 @@
 // students/studentsData.js
-import { elements } from './studentsElements.js';
-import { capitalizeFirstLetter, normalizeString } from '../utils/uiUtils.js';
+import { elements, initializeElements } from '../utils/sharedElements.js';
+import { capitalizeFirstLetter, normalizeString, renderPaginationControls } from '../utils/uiUtils.js';
 import { renderStudentList } from './studentsUI.js';
 import { currentPage, studentsPerPage, setTotalStudents, getTotalStudents, setTotalPages } from '../utils/uiUtils.js';
 let students = [];
@@ -134,7 +134,6 @@ export function gatherStudentData(perm_same) {
         studentData.otherNationality = null;
     }
     studentData.perm_same = perm_same;
-    console.log("Elements object:", elements);
      // perm_same is added in the handleFormSubmit function.
      if(studentData.perm_same === 0){
         studentData.perm_hno = getValue(elements.perm_hno);
@@ -144,7 +143,6 @@ export function gatherStudentData(perm_same) {
         studentData.perm_district = getValue(elements.perm_district);
         studentData.perm_state = getValue(elements.perm_state);
         studentData.perm_pincode = getNumber(elements.perm_pincode);
-        console.log("perm_hno value:", getValue(elements.perm_hno));
     } else {
         studentData.perm_hno = null;
         studentData.perm_street = null;
@@ -177,7 +175,6 @@ export async function fetchStudentsFromLocalDisk() {
     }
 }
 
-
 export async function initializeApp() {
     try {
         await fetchStudentsFromLocalDisk(); 
@@ -190,7 +187,15 @@ export function getSelectedValues(checkboxes) {
     if (!Array.isArray(checkboxes)) {
         checkboxes = [checkboxes]; // Convert single element to array
     }
-    return checkboxes.filter((checkbox) => checkbox?.checked).map((checkbox) => normalizeString(checkbox.value));
+
+    const selectedValues = checkboxes
+        .filter((checkbox) => {
+            return checkbox?.checked;
+        })
+        .map((checkbox) => {
+            return normalizeString(checkbox.value);
+        });
+    return selectedValues;
 }
 
 export async function filterAndRenderStudents(page = 1, limit = studentsPerPage) {
@@ -209,19 +214,20 @@ export async function filterAndRenderStudents(page = 1, limit = studentsPerPage)
         students = await fetchStudentsFromLocalDisk(); 
     }
 
-    // Define filters dynamically
     const filters = {
-        classYear: getSelectedValues([elements.firstYearCheckbox, elements.secondYearCheckbox]),
-        groupName: getSelectedValues([elements.mpcCheckbox, elements.bipcCheckbox, elements.mecCheckbox, elements.cecCheckbox]),
-        gender: getSelectedValues([elements.maleCheckbox, elements.femaleCheckbox])
+        classYear: getSelectedValues([elements.firstYearCheckbox, elements.secondYearCheckbox]) || [],
+        groupName: getSelectedValues([elements.mpcCheckbox, elements.bipcCheckbox, elements.mecCheckbox, elements.cecCheckbox]) || [],
     };
+    
 
     let filteredStudents = students.filter(student => {
-        return Object.entries(filters).every(([key, selectedValues]) => 
-            selectedValues.length === 0 || selectedValues.includes(normalizeString(student[key]))
+
+        return (
+            (filters.classYear.length === 0 || filters.classYear.includes(normalizeString(student.classYear))) &&
+            (filters.groupName.length === 0 || filters.groupName.includes(normalizeString(student.groupName)))
         );
     });
-
+    
     setTotalStudents(filteredStudents.length);
     setTotalPages(Math.ceil(filteredStudents.length / limit));
 
@@ -230,7 +236,9 @@ export async function filterAndRenderStudents(page = 1, limit = studentsPerPage)
     const offset = (validPage - 1) * validLimit;
     const paginatedStudents = filteredStudents.slice(offset, offset + validLimit);
    
-    elements.studentListContainer.innerHTML = paginatedStudents.length === 0
-        ? '<p>No students found.</p>'
-        : renderStudentList(paginatedStudents);
+    if (paginatedStudents.length === 0) {
+        elements.studentListContainer.innerHTML = '<p>No students found.</p>';
+    } else {
+        renderStudentList(paginatedStudents);
+    }
 }

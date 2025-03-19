@@ -131,7 +131,7 @@ export function addStudent(studentData) {
                 batchYear, fathersName, fatherCell, fatherOccupation, mothersName, motherCell, motherOccupation, dob, 
                 nationality, otherNationality, religion, community, motherTongue, scholarship, parentsIncome, 
                 physicallyHandicapped, aadhaar, additionalCell, identificationMark1, identificationMark2, hno, street, 
-                village, mandal, district, state, pincode,perm_same, perm_hno, perm_street, perm_village, perm_mandal, perm_district,
+                village, mandal, district, state, pincode, perm_same, perm_hno, perm_street, perm_village, perm_mandal, perm_district,
                 perm_state, perm_pincode, qualifyingExam, yearOfExam, hallTicketNumber, gpa
             ) VALUES (
                 ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
