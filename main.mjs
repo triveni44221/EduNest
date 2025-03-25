@@ -5,11 +5,14 @@ import fs from 'fs/promises';
 import bcrypt from 'bcrypt';
 import dotenv from 'dotenv';
 import Store from 'electron-store';
-import { addStudent, fetchStudents, updateStudent, deleteStudents } from './database/database.js';
-
+import { addStudent, fetchStudents, updateStudent, deleteStudents, addStudentFees, updateStudentFees  } from './database/database.js';
+import { getStudentFees } from './database/database.js'; // Import function
 
 dotenv.config();
 const store = new Store();
+
+console.log("🔍 Loaded ADMIN_PASSWORD:", process.env.ADMIN_PASSWORD); // Debug log
+
 
 // Resolve __dirname since ES modules don't have it
 const __filename = fileURLToPath(import.meta.url);
@@ -94,17 +97,42 @@ ipcMain.handle('updateStudent', async (event, updatedStudent) => updateStudent(u
 
 ipcMain.handle('deleteStudents', async (event, studentIds) => deleteStudents(studentIds));
 
-ipcMain.handle('login', async (event, { username, password }) => {
-    return new Promise((resolve, reject) => { // Return a Promise
-        const user = users[username];
-        if (user && password === user.password) {
-            event.sender.send('loginSuccess', user.role); // Send immediately
-            resolve({ success: true, role: user.role }); // Resolve the promise
-        } else {
-            resolve({ success: false, message: 'Invalid credentials' }); // Resolve with failure
-        }
-    });
+ipcMain.handle('addStudentFees', async (event, feeData) => addStudentFees(feeData));
+
+ipcMain.handle('getStudentFees', async (event, { studentId }) => {
+    return getStudentFees(studentId);
 });
+
+
+ipcMain.handle('updateStudentFees', async (event, feeData) => updateStudentFees(feeData));
+
+
+ipcMain.handle('login', async (event, { username, password }) => {
+    console.log("Received Login Request:", { username, password });
+    console.log("Loaded Users Object:", users);
+
+    const user = users[username];
+
+    if (user) {
+        console.log(`Checking login for ${username}:`, {
+            entered: password,
+            expected: user.password
+        });
+
+        if (password === user.password) {
+            console.log("✅ Login successful!");
+            event.sender.send('loginSuccess', user.role);
+            return { success: true, role: user.role };
+        } else {
+            console.log("❌ Password mismatch!");
+        }
+    } else {
+        console.log("❌ User not found!");
+    }
+
+    return { success: false, message: 'Invalid credentials' };
+});
+
 
 ipcMain.handle('storeCredentials', (event, { username, password }) => {
     store.set('credentials', { username, password });
@@ -121,8 +149,17 @@ ipcMain.handle('clearCredentials', () => {
 });
 
 app.whenReady().then(() => {
-    createLoginWindow(); // Create the login window
+    const isLinux = process.platform === 'linux';
+    
+    if (isLinux) {
+        // Simulate successful login on Linux
+        console.log("Running on Linux. Skipping login.");
+        createMainWindow('Admin'); // Or whichever role you want to simulate
+    } else {
+        createLoginWindow(); // Normal login flow on other platforms
+    }
 });
+
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {

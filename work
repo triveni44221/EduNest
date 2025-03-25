@@ -6,8 +6,12 @@ photo size
 
 dfault photos
 
+date of birth format
 
 
+batch year need to auto from date of admission
+
+sometimes, dropdowns qare taking the first value instead of preset values. it automatically resolves also
 
 
 ok here is my code. this is how i want the details to be displayed. and the code needs to be clean and dry and professional

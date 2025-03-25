@@ -178,52 +178,27 @@ export function getElementsByDataAttribute(attribute = "data-element") {
 
     export function sortData(data, key, ascending = true) {
         return data.sort((a, b) => {
-            const valueA = parseFloat(a[key]) || 0;
-            const valueB = parseFloat(b[key]) || 0;
+            let valueA = a[key];
+            let valueB = b[key];
     
-            const comparison = isNaN(valueA) || isNaN(valueB)
-                ? normalizeString(a[key]).localeCompare(normalizeString(b[key])) 
-                : valueA - valueB;
-    
-            return ascending ? comparison : -comparison;
+            if (typeof valueA === 'number' && typeof valueB === 'number') {
+                // Numeric comparison
+                return ascending ? valueA - valueB : valueB - valueA;
+            } else {
+                // String comparison (using localeCompare for better handling of accented characters)
+                if (typeof valueA === 'string' && typeof valueB === 'string') {
+                    return ascending
+                        ? normalizeString(valueA).localeCompare(normalizeString(valueB))
+                        : normalizeString(valueB).localeCompare(normalizeString(valueA));
+                } else {
+                    // Handle cases where values are not both numbers or both strings
+                    const strA = String(valueA);
+                    const strB = String(valueB);
+                    return ascending
+                        ? normalizeString(strA).localeCompare(normalizeString(strB))
+                        : normalizeString(strB).localeCompare(normalizeString(strA));
+                }
+            }
         });
     }
-
-    export function displayStudentPhoto(student, container, defaultPhoto = 'assets/default-photo.png') {
-    
-        return new Promise((resolve) => {  // Wrap function in a Promise
-            if (!student || !student.studentId) {
-                container.innerHTML = `<img src="${defaultPhoto}" alt="Default Student Photo" 
-                    style="width: 150px; height: 150px; object-fit: cover; float: right; border: 1px dashed #ccc;">`;
-                resolve();  // Resolve immediately for missing student
-                return;
-            }
-    
-            if (student.gender && student.gender.toLowerCase() === 'male') {
-                defaultPhoto = 'assets/default-boy.png';
-            } else if (student.gender && student.gender.toLowerCase() === 'female') {
-                defaultPhoto = 'assets/default-girl.png';
-            }
-    
-            const jpegPhotoPath = `http://localhost:3000/student-data/2023/${student.studentId}/photo.jpeg?t=${Date.now()}`;
-    
-            fetch(jpegPhotoPath, { method: 'HEAD' })
-                .then(response => {
-                    if (response.ok) {
-                        container.innerHTML = `<img src="${jpegPhotoPath}" alt="Student Photo" 
-                            style="width: 150px; height: 150px; object-fit: cover; float: right; border: 1px dashed #ccc;">`;
-                    } else {
-                        container.innerHTML = `<img src="${defaultPhoto}" alt="Default Student Photo" 
-                            style="width: 150px; height: 150px; object-fit: cover; float: right; border: 1px dashed #ccc;">`;
-                    }
-                    resolve();  // Ensure Promise is resolved
-                })
-                .catch((error) => {
-                    console.error("Error fetching photo:", error);
-                    container.innerHTML = `<img src="${defaultPhoto}" alt="Default Student Photo" 
-                        style="width: 150px; height: 150px; object-fit: cover; float: right; border: 1px dashed #ccc;">`;
-                    resolve();  // Resolve even on error
-                });
-        });
-    }
-    
+  

@@ -73,27 +73,49 @@ const CREATE_USERS_TABLE = `
     );
 `;
 
+const CREATE_FEES_TABLE = `
+    CREATE TABLE IF NOT EXISTS fees (
+        studentId INTEGER PRIMARY KEY,
+        admissionFees INTEGER NOT NULL,
+        eligibilityFee INTEGER NULL,
+        collegeFees INTEGER NOT NULL,
+        examFees INTEGER NOT NULL,
+        labFees INTEGER NULL,
+        coachingFee INTEGER NULL,
+        studyMaterialFees INTEGER NOT NULL,
+        uniformFees INTEGER NOT NULL,
+        FOREIGN KEY (studentId) REFERENCES students(studentId)
+    );
+`;
+
 // Create tables
 db.exec(CREATE_STUDENTS_TABLE);
 db.exec(CREATE_USERS_TABLE);
+db.exec(CREATE_FEES_TABLE);
 
-/** REUSABLE QUERY EXECUTION FUNCTION **/
+
+/** REUSABLE ASYNC QUERY EXECUTION FUNCTION **/
 function executeQuery(query, params = []) {
-    try {
-        const stmt = db.prepare(query);
-        if (query.trim().startsWith('SELECT')) {
-            return stmt.all(params);
+    return new Promise((resolve, reject) => {
+        try {
+            const stmt = db.prepare(query);
+
+            if (query.trim().startsWith('SELECT')) {
+                const result = stmt.all(params);
+                resolve(result);
+            } else {
+                const result = stmt.run(params);
+                resolve({
+                    success: result.changes > 0,
+                    lastInsertRowid: query.trim().startsWith('INSERT') ? result.lastInsertRowid : undefined,
+                    rowsAffected: result.changes
+                });
+            }
+        } catch (error) {
+            console.error("Database Error:", error);
+            reject({ success: false, message: error.message });
         }
-        const result = stmt.run(params);
-        return {
-            success: result.changes > 0,
-            lastInsertRowid: query.trim().startsWith('INSERT') ? result.lastInsertRowid : undefined,
-            rowsAffected: result.changes
-        };
-    } catch (error) {
-        console.error("Database Error:", error);
-        return { success: false, message: error.message };
-    }
+    });
 }
 
 /** STUDENT MANAGEMENT FUNCTIONS **/
@@ -166,6 +188,66 @@ export function addStudent(studentData) {
     }
 }
 
+/** FEE MANAGEMENT FUNCTIONS **/
+export function addStudentFees(feeData) {
+    try {
+        const stmt = db.prepare(`
+            INSERT INTO fees (
+                studentId, admissionFees, eligibilityFee, collegeFees, examFees, labFees, coachingFee, studyMaterialFees, uniformFees
+            ) VALUES (
+                ?, ?, ?, ?, ?, ?, ?, ?, ?
+            )
+        `);
+
+        const result = stmt.run(
+            feeData.studentId, feeData.admissionFees, feeData.eligibilityFee, feeData.collegeFees,
+            feeData.examFees, feeData.labFees, feeData.coachingFee, feeData.studyMaterialFees, feeData.uniformFees
+        );
+        console.log("✅ Fee details saved successfully for studentId:", feeData.studentId);
+
+        return { success: true, message: "Fee details added successfully" };
+    } catch (error) {
+        console.error("Error adding student fees:", error);
+        return { success: false, message: error.message };
+    }
+}
+
+export function updateStudentFees(feeData) {
+    try {
+        const stmt = db.prepare(`
+            UPDATE fees SET
+                admissionFees = ?, eligibilityFee = ?, collegeFees = ?, examFees = ?, labFees = ?, coachingFee = ?, studyMaterialFees = ?, uniformFees = ?
+            WHERE studentId = ?
+        `);
+
+        const result = stmt.run(
+            feeData.admissionFees, feeData.eligibilityFee, feeData.collegeFees, feeData.examFees,
+            feeData.labFees, feeData.coachingFee, feeData.studyMaterialFees, feeData.uniformFees,
+            feeData.studentId
+        );
+
+        return { success: true, message: "Fee details updated successfully" };
+    } catch (error) {
+        console.error("Error updating student fees:", error);
+        return { success: false, message: error.message };
+    }
+}
+
+export async function getStudentFees(studentId) {
+    try {
+        const query = `SELECT * FROM fees WHERE studentId = ?`;
+        const result = await executeQuery(query, [studentId]);
+        if (result && result.length > 0) {
+            return { success: true, feeData: result[0] }; // Return the first result
+        } else {
+            return { success: false, message: "No fee data found for this student." };
+        }
+    } catch (error) {
+        console.error("Error fetching student fees:", error);
+        return { success: false, message: error.message };
+    }
+}
+
 export function fetchStudents(limit = 30, offset = 0) {
     limit = parseInt(limit, 10);
     offset = parseInt(offset, 10);
@@ -196,10 +278,21 @@ export function updateStudent(updatedData) {  // Take updatedData ONLY
     }
 }
 
-export function deleteStudents(studentIds) {
+export async function deleteStudents(studentIds) {
     if (!studentIds.length) return { success: false, message: "No student IDs provided" };
 
     const placeholders = studentIds.map(() => '?').join(', ');
-    const query = `DELETE FROM students WHERE studentId IN (${placeholders})`;
-    return executeQuery(query, studentIds);
+
+    try {
+        // Delete related records first (adjust based on your related tables)
+        await executeQuery(`DELETE FROM fees WHERE studentId IN (${placeholders})`, studentIds);
+
+        // Now delete the students
+        const result = await executeQuery(`DELETE FROM students WHERE studentId IN (${placeholders})`, studentIds);
+
+        return { success: true, message: `${studentIds.length} student(s) deleted successfully.` };
+    } catch (error) {
+        console.error("Error deleting students:", error);
+        return { success: false, message: "Failed to delete students." };
+    }
 }

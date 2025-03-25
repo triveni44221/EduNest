@@ -1,18 +1,23 @@
 import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
+import os from "os";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = 3000;
+const PORT = 4000;
 
-// Explicitly set the student data folder path
-const studentDataPath = "D:/student data";
+let studentDataPath = null;
+if (os.platform() === "win32") {
+    studentDataPath = "D:/student data";
+}
 
-// Serve student documents and photos
-app.use("/student-data", express.static(studentDataPath));
+// Serve student documents and photos only if the path is set
+if (studentDataPath) {
+    app.use("/student-data", express.static(studentDataPath));
+}
 
 // Default route to check if the server is running
 app.get("/", (req, res) => {

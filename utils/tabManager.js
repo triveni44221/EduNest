@@ -1,8 +1,9 @@
 class TabManager {
-    constructor(tabButtons, tabContents, defaultTab) {
+    constructor(tabButtons, tabContents, defaultTab, contentLoaders = {}) {
         this.tabs = tabButtons.map((btn, index) => ({
             button: btn,
             content: tabContents[index],
+            loader: contentLoaders[btn.getAttribute("data-element")] || null, // Get loader function if exists
         }));
         this.activeTab = defaultTab || this.tabs[0];
         this.init();
@@ -16,20 +17,22 @@ class TabManager {
     }
 
     switchTab(activeButton) {
-        this.tabs.forEach(({ button, content }) => {
+        this.tabs.forEach(({ button, content, loader }) => {
             const isActive = button === activeButton;
             button.classList.toggle('active', isActive);
-             // ✅ Ensure correct tab content visibility
-             if (isActive) {
-                content.style.display = "block";  // Show active tab content
-            } else {
-                content.style.display = "none";  // Hide inactive tab content
+
+            // ✅ Show or hide tab content
+            content.style.display = isActive ? "block" : "none";
+
+            // ✅ Load dynamic content if loader exists & content is empty
+            if (isActive && loader && content.innerHTML.trim() === "") {
+                loader(content);
             }
         });
     }
 }
 
-// ✅ Ensure these functions are exported correctly
+// ✅ Helper functions to create UI elements
 function createTabButton(id, label) {
     const button = document.createElement('button');
     button.setAttribute('data-element', id);

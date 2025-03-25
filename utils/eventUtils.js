@@ -17,11 +17,6 @@ function attachStudentEventListeners(studentTabManager) {
     const tabActions = {
         allStudentsTabButton: () => showStudentsTab(studentTabManager),
         addStudentTabButton: () => showAddStudent(studentTabManager),
-        basicDetailsTab: () => displayStudentData(studentTabManager),
-        feeTab: () => console.log("Load Fee Details"),  // Replace with actual fee loading function
-        academicsTab: () => console.log("Load Academics"), // Replace with actual academics function
-        attendanceTab: () => console.log("Load Attendance"), // Replace with attendance function
-        certificatesTab: () => console.log("Load Certificates") // Replace with certificates function
     };
 
     Object.keys(tabActions).forEach(tabKey => {
@@ -29,11 +24,12 @@ function attachStudentEventListeners(studentTabManager) {
         if (tabButton) {
             tabButton.removeEventListener("click", tabActions[tabKey]);
             tabButton.addEventListener("click", tabActions[tabKey]);
-        }else {
+        } else {
             console.error(`❌ Tab button ${tabKey} not found in elements!`);
         }
     });
 }
+
 
 function attachFilterEventListeners() {
     const filterCheckboxes = [

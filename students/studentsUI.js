@@ -1,13 +1,12 @@
-import { fetchStudentsFromLocalDisk, filterAndRenderStudents } from './studentsData.js';
+import { fetchStudentsFromDatabase } from './studentsData.js';
 import TabManager, { createTabButton, createTabContent } from '../utils/tabManager.js';
 import { initializeEventListeners } from '../utils/eventUtils.js';
-import { showEditStudent } from './studentsForm.js';
-import { renderStudentForm } from './studentsForm.js';
-import { toggleVisibility, sortData, normalizeString, capitalizeFirstLetter, displayStudentPhoto, renderPaginationControls} from '../utils/uiUtils.js';
+import { showEditStudent, renderStudentForm } from './studentsForm.js';
+import { toggleVisibility, sortData, normalizeString, capitalizeFirstLetter, renderPaginationControls} from '../utils/uiUtils.js';
 import { elements, initializeElements } from '../utils/sharedElements.js';
 import { formatStudentData } from '../utils//dataUtils.js';
 import { deleteSelectedStudents } from './studentsEvents.js' ;
-import { studentTabManager, initializeStudentsPage } from './students.js';
+import { studentTabManager } from './students.js';
 
 let students = [];
 
@@ -18,7 +17,6 @@ export async function showStudentsTab(studentTabManager) {
         console.error('Students tab elements not found.');
         return;
     }
-    // ✅ Ensure tabManager is initialized before switching tabs
     if (studentTabManager) {
         studentTabManager.switchTab(elements.allStudentsTabButton);
     } else {
@@ -29,13 +27,12 @@ export async function showStudentsTab(studentTabManager) {
         elements.studentDataContainer.innerHTML = '';
     }
     try {
-        students = await fetchStudentsFromLocalDisk(); // Ensure students is global
-
+        students = await fetchStudentsFromDatabase(); 
         if (!students || students.length === 0) {
             console.warn("⚠️ No students found after fetching.");
         } else {
-            renderStudentList(students); // Renders the table
-            attachRowClickEvents(); // Attach listeners AFTER data loads
+            renderStudentList(students); 
+            attachRowClickEvents();
         }
     } catch (error) {
         console.error('❌ Error fetching students:', error);
@@ -44,7 +41,6 @@ export async function showStudentsTab(studentTabManager) {
 
 export function showAddStudent(studentTabManager) {
     initializeElements();
-    console.log("showaddstudent called");
 
     if (!elements.addStudentTabButton || !elements.allStudentsTabButton) {
         console.error('Add student tab elements not found.');
@@ -55,18 +51,14 @@ export function showAddStudent(studentTabManager) {
     const isEditForm = currentForm && currentForm.dataset.formType === 'edit';
 
     if (isEditForm) {
-        // Clear only if switching from edit to add
         elements.addStudentFormContainer.innerHTML = '';
         renderStudentForm(elements.addStudentFormContainer);
     } else if (!currentForm) {
-        // Render if no form exists
         renderStudentForm(elements.addStudentFormContainer);
     }
 
-    // Restore form data unconditionally
     restoreFormData();
 
-   // Switch to the "Add Student" tab using TabManager
    if (studentTabManager) {
     studentTabManager.switchTab(elements.addStudentTabButton);
 } else {
@@ -82,6 +74,7 @@ export function saveFormData() {
     });
     localStorage.setItem("addStudentFormData", JSON.stringify(formData));
 }
+
 export function restoreFormData() {
     const formData = JSON.parse(localStorage.getItem("addStudentFormData") || "{}");
     document.querySelectorAll("[data-form-field]").forEach(field => {
@@ -197,9 +190,6 @@ export function renderStudentList(students) {
         return;
     }
 
-    let sortOrder = 'asc';
-    let sortedColumn = null;
-
     const deleteButton = document.createElement('button');
     deleteButton.textContent = 'Delete Selected';
     deleteButton.className = 'delete-button';
@@ -312,59 +302,96 @@ function displayStudentTabs(student) {
 
     // Tab configuration (IDs should match existing logic)
     const tabConfig = [
-        { id: 'basicDetailsTab', label: 'Basic Details' },
-        { id: 'feeTab', label: 'Fee' },
-        { id: 'academicsTab', label: 'Academics' },
-        { id: 'attendanceTab', label: 'Attendance' },
-        { id: 'certificatesTab', label: 'Certificates' }
+        { id: 'basicDetailsTab', label: 'Basic Details', loader: loadBasicDetailsContent },
+        { id: 'feeTab', label: 'Fee', loader: loadFeeDetailsContent },
+        { id: 'academicsTab', label: 'Academics', loader: loadAcademicsContent },
+        { id: 'attendanceTab', label: 'Attendance', loader: loadAttendanceContent },
+        { id: 'certificatesTab', label: 'Certificates', loader: loadCertificatesContent }
     ];
 
     // Generate tabs and contents
     const tabButtons = [];
     const tabContents = [];
-
-    tabConfig.forEach(({ id, label }) => {
+    const contentLoaders = {};
+    
+    tabConfig.forEach(({ id, label, loader }) => {
         const button = createTabButton(id, label);
         tabButtons.push(button);
         tabContainer.appendChild(button);
-
+    
         const content = createTabContent(id + "Content");
         tabContents.push(content);
         contentContainer.appendChild(content);
+    
+        if (loader) {  // ✅ Now loader is correctly recognized
+            contentLoaders[id] = (container) => loader(student, container);
+        }
     });
-
+    
     // Append tabs and content to the container
     studentDataContainer.appendChild(tabContainer);
     studentDataContainer.appendChild(contentContainer);
 
     // Initialize TabManager for dynamic switching
-    new TabManager(tabButtons, tabContents, tabButtons[0]);
+    new TabManager(tabButtons, tabContents, tabButtons[0], contentLoaders);
 
-    // Load Basic Details content when the tab is clicked
-    tabButtons[0].addEventListener("click", () => loadBasicDetailsContent(student, tabContents[0]));
-
-    // Auto-click Basic Details to load content on render
+    // Auto-click Basic Details to load first content
     tabButtons[0].click();
 }
 
 function loadBasicDetailsContent(student, contentContainer) {
-    if (contentContainer.innerHTML.trim() !== "") return; // Prevent reloading
+    if (contentContainer.innerHTML.trim() !== "") return; // Prevent redundant reloading
+
+    // ✅ Show loading message while fetching student details
+    contentContainer.innerHTML = `<p>Loading student details...</p>`;
 
     const formattedData = formatStudentDetails(student);
-    const photoContainer = document.createElement('div');
+    const photoContainer = document.createElement("div");
 
-    displayStudentPhoto(student, photoContainer).then(() => {
-        const photoHtml = photoContainer.innerHTML;
+    displayStudentPhoto(student, photoContainer)
+        .then(() => {
+            const photoHtml = photoContainer.innerHTML;
 
-        contentContainer.innerHTML = `
-            <div class="student-details-header">
-                <h3>Student Details</h3>
-                <button data-element="editStudentButton" class="edit-button" data-student-id="${student.studentId}">Edit</button>
-            </div>
-            ${renderStudentSections(formattedData, photoHtml)}
-        `;
-    });
+            // ✅ Render the full content after loading the student photo
+            contentContainer.innerHTML = `
+                <div class="student-details-header">
+                    <h3>Student Details</h3>
+                    <button data-element="editStudentButton" class="edit-button" data-student-id="${student.studentId}">Edit</button>
+                </div>
+                ${renderStudentSections(formattedData, photoHtml)}
+            `;
+        })
+        .catch((error) => {
+            console.error("❌ Error loading student photo:", error);
+
+            // ✅ Render content even if photo fails
+            contentContainer.innerHTML = `
+                <div class="student-details-header">
+                    <h3>Student Details</h3>
+                    <button data-element="editStudentButton" class="edit-button" data-student-id="${student.studentId}">Edit</button>
+                </div>
+                ${renderStudentSections(formattedData, "<p>Photo unavailable</p>")}
+            `;
+        });
 }
+
+function loadFeeDetailsContent(student, contentContainer) {
+    contentContainer.innerHTML = `<h2>Fee Details</h2><p>Loading fee details...</p>`;
+}
+
+function loadAcademicsContent(student, contentContainer) {
+    contentContainer.innerHTML = `<h2>Academics</h2><p>Loading academic details...</p>`;
+}
+
+function loadAttendanceContent(student, contentContainer) {
+    contentContainer.innerHTML = `<h2>Attendance</h2><p>Loading attendance records...</p>`;
+}
+
+function loadCertificatesContent(student, contentContainer) {
+    contentContainer.innerHTML = `<h2>Certificates</h2><p>Loading certificates...</p>`;
+}
+
+
 
 function handleRowClick(event) {
     const row = event.currentTarget;
@@ -418,3 +445,52 @@ export function updateTableBody(tbody, students) {
     tbody.innerHTML = renderRows(formattedStudents);
     attachRowClickEvents();
 }
+  export function displayStudentPhoto(student, container, defaultPhoto = 'assets/default-photo.png') {
+    
+        return new Promise((resolve) => {  // Wrap function in a Promise
+            if (!student || !student.studentId) {
+                container.innerHTML = `<img src="${defaultPhoto}" alt="Default Student Photo" 
+                    style="width: 150px; height: 150px; object-fit: cover; float: right; border: 1px dashed #ccc;">`;
+                resolve();  // Resolve immediately for missing student
+                return;
+            }
+    
+            if (student.gender && student.gender.toLowerCase() === 'male') {
+                defaultPhoto = 'assets/default-boy.png';
+            } else if (student.gender && student.gender.toLowerCase() === 'female') {
+                defaultPhoto = 'assets/default-girl.png';
+            }
+    
+// Extract the year from the student ID
+const studentIdString = String(student.studentId); // Ensure studentId is a string
+const yearPrefix = studentIdString.substring(0, 2); // Get the first two digits (e.g., "23", "24")
+const fullYear = `20${yearPrefix}`; // Convert to a full year (e.g., "2023", "2024")
+
+const jpegPhotoPath = `http://localhost:3000/student-data/${fullYear}/${student.studentId}/photo.jpeg?t=${Date.now()}`;
+
+            fetch(jpegPhotoPath, { method: 'HEAD' })
+                .then(response => {
+                    if (response.ok) {
+                        container.innerHTML = `<img src="${jpegPhotoPath}" alt="Student Photo" 
+                            style="width: 150px; height: 150px; object-fit: cover; float: right; border: 1px dashed #ccc;">`;
+                    } else {
+                        container.innerHTML = `<img src="${defaultPhoto}" alt="Default Student Photo" 
+                            style="width: 150px; height: 150px; object-fit: cover; float: right; border: 1px dashed #ccc;">`;
+                    }
+                    resolve();  // Ensure Promise is resolved
+                })
+                .catch((error) => {
+                    console.error("Error fetching photo:", error);
+                    container.innerHTML = `<img src="${defaultPhoto}" alt="Default Student Photo" 
+                        style="width: 150px; height: 150px; object-fit: cover; float: right; border: 1px dashed #ccc;">`;
+                    resolve();  // Resolve even on error
+                });
+        });
+    }
+    
+    export function createStudentPhotoSection(studentData) {
+        const photoDiv = document.createElement('div');
+        photoDiv.classList.add('student-photo-container');
+        displayStudentPhoto(studentData, photoDiv);
+        return photoDiv;
+    }

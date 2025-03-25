@@ -1,8 +1,8 @@
 // students/studentsData.js
 import { elements, initializeElements } from '../utils/sharedElements.js';
-import { capitalizeFirstLetter, normalizeString, renderPaginationControls } from '../utils/uiUtils.js';
+import { capitalizeFirstLetter, normalizeString, studentsPerPage, setTotalStudents, setTotalPages } from '../utils/uiUtils.js';
 import { renderStudentList } from './studentsUI.js';
-import { currentPage, studentsPerPage, setTotalStudents, getTotalStudents, setTotalPages } from '../utils/uiUtils.js';
+
 let students = [];
 
 export function createOptions(options) {
@@ -20,8 +20,12 @@ export const GROUP_OPTIONS = createOptions(['MPC', 'BiPC', 'MEC', 'CEC']);
 export const MEDIUM_OPTIONS = createOptions(['English', 'Telugu']);
 export const SECOND_LANGUAGE_OPTIONS = createOptions(['Sanskrit', 'Telugu', 'Hindi', 'English']);
 export const NATIONALITY_OPTIONS = createOptions(['Indian', 'Others']);
-export const SCHOLARSHIP_OPTIONS = createOptions(['Yes', 'No']);
-export const PHYSICALLY_HANDICAPPED_OPTIONS = createOptions(['Yes', 'No']);
+
+export const YES_NO_OPTIONS = createOptions(['Yes', 'No']);
+export const SCHOLARSHIP_OPTIONS = YES_NO_OPTIONS;
+export const PHYSICALLY_HANDICAPPED_OPTIONS = YES_NO_OPTIONS;
+
+
 export const QUALIFYING_EXAM_OPTIONS = createOptions(['SSC', 'CBSE', 'ICSE', 'Others']);
 export const OCCUPATION_OPTIONS = createOptions(['Professor', 'Doctor', 'Engineer', 'Farmer', 'Others'].sort() );
 export const PARENTS_INCOME_OPTIONS = [
@@ -36,6 +40,12 @@ export const BATCH_YEAR_OPTIONS = Array.from({ length: 16 }, (_, i) => {
     return { value: `${year}-${year + 1}`, label: `${year}-${year + 1}` };
 });
 
+export const COACHING_OPTIONS = [
+    { value: '', label: 'None' },
+    { value: 'eapcet', label: 'EAPCET' },
+    { value: 'neet', label: 'NEET' },
+];
+
 export function validateForm(studentData) {
     const errors = {};
 
@@ -43,7 +53,6 @@ export function validateForm(studentData) {
         errors.studentName = 'Student Name is required.';
     }
 
-    // Validate Aadhaar
     if (!studentData.aadhaar.match(/^\d{12}$/)) {
         errors.aadhaar = 'Aadhaar must be a 12-digit number.';
     }
@@ -56,12 +65,10 @@ export function validateForm(studentData) {
         errors.gpa = 'GPA can have at most two decimal places.';
     }
 
-    // Nationality Validation
     if (studentData.nationality === 'others' && !studentData.otherNationality) {
         errors.otherNationality = "Nationality is required when 'Others' is selected.";
     }
 
-    // Validate perm_same
     if (studentData.perm_same === null) {
         errors.perm_same = "Please select whether the permanent address is the same as the present address.";
     }
@@ -134,7 +141,6 @@ export function gatherStudentData(perm_same) {
         studentData.otherNationality = null;
     }
     studentData.perm_same = perm_same;
-     // perm_same is added in the handleFormSubmit function.
      if(studentData.perm_same === 0){
         studentData.perm_hno = getValue(elements.perm_hno);
         studentData.perm_street = getValue(elements.perm_street);
@@ -156,7 +162,28 @@ export function gatherStudentData(perm_same) {
     return studentData;
 }
 
-export async function fetchStudentsFromLocalDisk() {
+export function gatherFeeData() {
+    const getFeeValue = (element) => {
+        if (!element || element.disabled) {
+            return null; // Return null if the element is disabled or doesn't exist
+        }
+        const value = Number(element.value);
+        return isNaN(value) ? null : value; // Return null if parsing fails, otherwise the parsed number
+    };
+
+    return {
+        admissionFees: getFeeValue(elements.admissionFees),
+        eligibilityFee: getFeeValue(elements.eligibilityFee),
+        collegeFees: getFeeValue(elements.collegeFees),
+        examFees: getFeeValue(elements.examFees),
+        labFees: getFeeValue(elements.labFees),
+        coachingFee: getFeeValue(elements.coachingFee),
+        studyMaterialFees: getFeeValue(elements.studyMaterialFees),
+        uniformFees: getFeeValue(elements.uniformFees),
+    };
+}
+
+export async function fetchStudentsFromDatabase() {
     try {
         const result = await window.electron.invoke('fetchStudents');
         
@@ -175,9 +202,25 @@ export async function fetchStudentsFromLocalDisk() {
     }
 }
 
+export async function fetchFeeDetailsFromDatabase(studentId) {
+        try {
+            const result = await window.electron.invoke('getStudentFees', { studentId });
+            if (result.success) {
+                return result.feeData; // Assuming the database returns an object with fee fields
+            } else {
+                console.warn("No existing fee data found for student ID:", studentId);
+                return {}; // Return an empty object if no data is found
+            }
+        } catch (error) {
+            console.error("Error fetching fee details:", error);
+            return {}; // Return an empty object to avoid breaking the form
+        }
+    }
+
+
 export async function initializeApp() {
     try {
-        await fetchStudentsFromLocalDisk(); 
+        await fetchStudentsFromDatabase(); 
     } catch (error) {
         console.error("Error initializing app:", error);
     }
@@ -211,7 +254,7 @@ export async function filterAndRenderStudents(page = 1, limit = studentsPerPage)
 
     page = Number(page) || 1; // Ensure page is a valid number
     if (!students || students.length === 0) { 
-        students = await fetchStudentsFromLocalDisk(); 
+        students = await fetchStudentsFromDatabase(); 
     }
 
     const filters = {

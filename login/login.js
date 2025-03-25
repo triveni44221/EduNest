@@ -13,12 +13,21 @@ const submitButton = loginForm.querySelector('button[type="submit"]');
 const MAX_FAILED_ATTEMPTS = 5; 
 let failedAttempts = 0;
 
-// Event Listeners
 document.addEventListener("DOMContentLoaded", async () => {
-    togglePassword.addEventListener('click', togglePasswordVisibility);
-    loginForm.addEventListener('submit', handleLogin);
-    await loadStoredCredentials(); // Load stored credentials on startup
+    const isLinux = navigator.platform.includes('Linux');
+    
+    if (isLinux) {
+        console.log("Running on Linux. Skipping login form.");
+        const simulatedUsername = 'admin'; // Simulate a username
+        const simulatedPassword = 'password'; // Simulate a password
+        await handleLogin({ preventDefault: () => {} }, simulatedUsername, simulatedPassword);
+    } else {
+        togglePassword.addEventListener('click', togglePasswordVisibility);
+        loginForm.addEventListener('submit', handleLogin);
+        await loadStoredCredentials(); // Load stored credentials on startup
+    }
 });
+
 
 window.electron.receive('loginSuccess', (role) => {
     console.log("Login successful. Redirecting...");
