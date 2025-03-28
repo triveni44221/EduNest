@@ -1,5 +1,5 @@
 // students/studentsData.js
-import { elements, initializeElements } from '../utils/sharedElements.js';
+import { elements } from '../utils/sharedElements.js';
 import { capitalizeFirstLetter, normalizeString, studentsPerPage, setTotalStudents, setTotalPages } from '../utils/uiUtils.js';
 import { renderStudentList } from './studentsUI.js';
 
@@ -20,12 +20,9 @@ export const GROUP_OPTIONS = createOptions(['MPC', 'BiPC', 'MEC', 'CEC']);
 export const MEDIUM_OPTIONS = createOptions(['English', 'Telugu']);
 export const SECOND_LANGUAGE_OPTIONS = createOptions(['Sanskrit', 'Telugu', 'Hindi', 'English']);
 export const NATIONALITY_OPTIONS = createOptions(['Indian', 'Others']);
-
 export const YES_NO_OPTIONS = createOptions(['Yes', 'No']);
 export const SCHOLARSHIP_OPTIONS = YES_NO_OPTIONS;
 export const PHYSICALLY_HANDICAPPED_OPTIONS = YES_NO_OPTIONS;
-
-
 export const QUALIFYING_EXAM_OPTIONS = createOptions(['SSC', 'CBSE', 'ICSE', 'Others']);
 export const OCCUPATION_OPTIONS = createOptions(['Professor', 'Doctor', 'Engineer', 'Farmer', 'Others'].sort() );
 export const PARENTS_INCOME_OPTIONS = [
@@ -162,27 +159,6 @@ export function gatherStudentData(perm_same) {
     return studentData;
 }
 
-export function gatherFeeData() {
-    const getFeeValue = (element) => {
-        if (!element || element.disabled) {
-            return null; // Return null if the element is disabled or doesn't exist
-        }
-        const value = Number(element.value);
-        return isNaN(value) ? null : value; // Return null if parsing fails, otherwise the parsed number
-    };
-
-    return {
-        admissionFees: getFeeValue(elements.admissionFees),
-        eligibilityFee: getFeeValue(elements.eligibilityFee),
-        collegeFees: getFeeValue(elements.collegeFees),
-        examFees: getFeeValue(elements.examFees),
-        labFees: getFeeValue(elements.labFees),
-        coachingFee: getFeeValue(elements.coachingFee),
-        studyMaterialFees: getFeeValue(elements.studyMaterialFees),
-        uniformFees: getFeeValue(elements.uniformFees),
-    };
-}
-
 export async function fetchStudentsFromDatabase() {
     try {
         const result = await window.electron.invoke('fetchStudents');
@@ -201,22 +177,6 @@ export async function fetchStudentsFromDatabase() {
         return [];
     }
 }
-
-export async function fetchFeeDetailsFromDatabase(studentId) {
-        try {
-            const result = await window.electron.invoke('getStudentFees', { studentId });
-            if (result.success) {
-                return result.feeData; // Assuming the database returns an object with fee fields
-            } else {
-                console.warn("No existing fee data found for student ID:", studentId);
-                return {}; // Return an empty object if no data is found
-            }
-        } catch (error) {
-            console.error("Error fetching fee details:", error);
-            return {}; // Return an empty object to avoid breaking the form
-        }
-    }
-
 
 export async function initializeApp() {
     try {

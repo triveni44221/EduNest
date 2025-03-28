@@ -7,6 +7,8 @@ import { elements, initializeElements } from '../utils/sharedElements.js';
 import { formatStudentData } from '../utils//dataUtils.js';
 import { deleteSelectedStudents } from './studentsEvents.js' ;
 import { studentTabManager } from './students.js';
+import { loadFeeDetailsContent } from "../fees/fees.js";
+
 
 let students = [];
 
@@ -90,8 +92,10 @@ export function formatStudentDetails(student) {
     Object.entries(student).forEach(([key, value]) => {
         let formattedValue = value || "N/A";
 
-        if (["classYear", "gender"].includes(key)) {
-            formattedValue = capitalizeFirstLetter(normalizeString(value));
+        if (key === "classYear") {
+            formattedValue = formatOrdinalClassYear(value);
+        } else if (key === "gender") {
+            formattedValue = capitalizeFirstLetter(normalizeString(value));        
         } else if (key === "groupName") {
             formattedValue = value ? value.toUpperCase() : "";
         }
@@ -120,51 +124,17 @@ export function formatStudentDetails(student) {
     return formattedData;
 }
 
-function renderStudentSections(formattedData, photoHtml) {
-    const sections = {
-        "Admission Details": ["studentId", "studentName", "admissionNumber", "dateOfAdmission", "classYear", "groupName", "medium", "secondLanguage", "batchYear"],
-        "Academic Details": ["qualifyingExam", "gpa", "yearOfExam", "hallTicketNumber"],
-        "Personal Details": ["dob", "nationality", "religion", "community", "motherTongue", "additionalCell", "scholarship", "parentsIncome", "physicallyHandicapped", "aadhaar", "identificationMark1", "identificationMark2"],
-        "Parent Details": ["fathersName", "mothersName", "fatherCell", "motherCell", "fatherOccupation", "motherOccupation"],
-        "Address Details": ["hno", "perm_hno", "street", "perm_street", "village", "perm_village", "mandal", "perm_mandal", "district", "perm_district", "state", "perm_state", "pincode", "perm_pincode"],
+function formatOrdinalClassYear(year) {
+    const ordinalMap = {
+        "first": "1<sup>st</sup>",
+        "second": "2<sup>nd</sup>",
+        "third": "3<sup>rd</sup>",
+        "fourth": "4<sup>th</sup>"
     };
+    const normalizedYear = normalizeString(year);
+    const ordinal = ordinalMap[normalizedYear] ? ordinalMap[normalizedYear] : year;
 
-    return Object.entries(sections)
-        .map(([sectionName, keys]) => {
-            const sectionHtml = keys
-                .map(key => {
-                    const item = formattedData.get(key.toLowerCase());
-                    if (!item) return "";
-
-                    if (key === "identificationMark1" || key === "identificationMark2") {
-                        return `
-                            <div class="identification-mark-row">
-                                <dt class="identification-label">${item.label}:</dt>
-                                <dd class="identification-value">${item.value}</dd>
-                            </div>
-                        `;
-                    }
-
-                    return `<dt>${item.label}:</dt><dd>${item.value}</dd>`;
-                })
-                .join("");
-
-            if (sectionName === "Admission Details") {
-                return `
-                    <div class="student-section admission-container">
-                        <h4>${sectionName}</h4>
-                        <div class="admission-details">
-                            <dl>${sectionHtml}</dl>
-                            <div class="photo-container">
-                                ${photoHtml}
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-            return sectionHtml ? `<div class="student-section student-details"><h4>${sectionName}</h4><dl>${sectionHtml}</dl></div>` : "";
-        })
-        .join("");
+    return `<span class="ordinal-year">${ordinal}</span>`;
 }
 
 export function handleEditButtonClick(event) {
@@ -262,6 +232,7 @@ export function attachRowClickEvents() {
     });
     elements.studentDataContainer.addEventListener("click", handleEditButtonClick); //Add event listener here
 }
+
 export function displayStudentData(studentId) {
     const student = students.find(student => String(student.studentId) === String(studentId));
 
@@ -293,14 +264,35 @@ function displayStudentTabs(student) {
     // Clear previous content
     studentDataContainer.innerHTML = "";
 
-    // Create a container for tabs and tab content
+    // Create tab container
     const tabContainer = document.createElement("div");
     tabContainer.classList.add("tab-container");
 
     const contentContainer = document.createElement("div");
     contentContainer.classList.add("tab-content-container");
 
-    // Tab configuration (IDs should match existing logic)
+    // Format student details
+    const formattedData = formatStudentDetails(student);
+    const studentName = formattedData.get("studentname")?.value || "N/A";
+    const classYear = formattedData.get("classyear")?.value || "N/A";
+    const groupName = formattedData.get("groupname")?.value || "N/A";
+    const studentId = student.studentId || "N/A";
+
+    const studentPrimaryContainer = document.createElement("div");
+studentPrimaryContainer.classList.add("student-primary-container");
+
+studentPrimaryContainer.innerHTML = `
+    <div class="student-info-container">
+        <span class="student-id">${studentId}</span>
+        <span class="infoSeparator">-</span>
+        <span class="student-name">${studentName}</span>
+        <span class="infoSeparator">-</span>
+        <span class="student-class">${formatOrdinalClassYear(classYear)} Year ${groupName}</span>
+    </div>
+`;
+
+
+    // Tab configuration
     const tabConfig = [
         { id: 'basicDetailsTab', label: 'Basic Details', loader: loadBasicDetailsContent },
         { id: 'feeTab', label: 'Fee', loader: loadFeeDetailsContent },
@@ -309,75 +301,106 @@ function displayStudentTabs(student) {
         { id: 'certificatesTab', label: 'Certificates', loader: loadCertificatesContent }
     ];
 
-    // Generate tabs and contents
     const tabButtons = [];
     const tabContents = [];
     const contentLoaders = {};
-    
+
     tabConfig.forEach(({ id, label, loader }) => {
         const button = createTabButton(id, label);
         tabButtons.push(button);
         tabContainer.appendChild(button);
-    
+
         const content = createTabContent(id + "Content");
         tabContents.push(content);
         contentContainer.appendChild(content);
-    
-        if (loader) {  // ✅ Now loader is correctly recognized
+
+        if (loader) {
             contentLoaders[id] = (container) => loader(student, container);
         }
     });
-    
-    // Append tabs and content to the container
+
+    // Append elements in order: Tabs → Student Info → Tab Content
     studentDataContainer.appendChild(tabContainer);
+    studentDataContainer.appendChild(studentPrimaryContainer);
     studentDataContainer.appendChild(contentContainer);
 
-    // Initialize TabManager for dynamic switching
+    // Initialize TabManager
     new TabManager(tabButtons, tabContents, tabButtons[0], contentLoaders);
 
-    // Auto-click Basic Details to load first content
+    // Auto-click first tab
     tabButtons[0].click();
 }
 
-function loadBasicDetailsContent(student, contentContainer) {
-    if (contentContainer.innerHTML.trim() !== "") return; // Prevent redundant reloading
+function renderStudentSections(formattedData, photoHtml) {
+    const sections = {
+        "Admission Details": ["studentId", "studentName", "admissionNumber", "dateOfAdmission", "classYear", "groupName", "medium", "secondLanguage", "batchYear"],
+        "Academic Details": ["qualifyingExam", "gpa", "yearOfExam", "hallTicketNumber"],
+        "Personal Details": ["dob", "nationality", "religion", "community", "motherTongue", "additionalCell", "scholarship", "parentsIncome", "physicallyHandicapped", "aadhaar", "identificationMark1", "identificationMark2"],
+        "Parent Details": ["fathersName", "mothersName", "fatherCell", "motherCell", "fatherOccupation", "motherOccupation"],
+        "Address Details": ["hno", "perm_hno", "street", "perm_street", "village", "perm_village", "mandal", "perm_mandal", "district", "perm_district", "state", "perm_state", "pincode", "perm_pincode"],
+    };
 
-    // ✅ Show loading message while fetching student details
-    contentContainer.innerHTML = `<p>Loading student details...</p>`;
+    return Object.entries(sections)
+        .map(([sectionName, keys]) => {
+            const sectionHtml = keys
+                .map(key => {
+                    const item = formattedData.get(key.toLowerCase());
+                    if (!item) return "";
 
-    const formattedData = formatStudentDetails(student);
-    const photoContainer = document.createElement("div");
+                    if (key === "identificationMark1" || key === "identificationMark2") {
+                        return `
+                            <div class="identification-mark-row">
+                                <dt class="identification-label">${item.label}:</dt>
+                                <dd class="identification-value">${item.value}</dd>
+                            </div>
+                        `;
+                    }
 
-    displayStudentPhoto(student, photoContainer)
-        .then(() => {
-            const photoHtml = photoContainer.innerHTML;
+                    return `<dt>${item.label}:</dt><dd>${item.value}</dd>`;
+                })
+                .join("");
 
-            // ✅ Render the full content after loading the student photo
-            contentContainer.innerHTML = `
-                <div class="student-details-header">
-                    <h3>Student Details</h3>
-                    <button data-element="editStudentButton" class="edit-button" data-student-id="${student.studentId}">Edit</button>
-                </div>
-                ${renderStudentSections(formattedData, photoHtml)}
-            `;
+            if (sectionName === "Admission Details") {
+                return `
+                    <div class="student-section admission-container">
+                        <h4>${sectionName}</h4>
+                        <div class="admission-details">
+                            <dl>${sectionHtml}</dl>
+                            <div class="photo-container">
+                                ${photoHtml}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            return sectionHtml ? `<div class="student-section student-details"><h4>${sectionName}</h4><dl>${sectionHtml}</dl></div>` : "";
         })
-        .catch((error) => {
-            console.error("❌ Error loading student photo:", error);
-
-            // ✅ Render content even if photo fails
-            contentContainer.innerHTML = `
-                <div class="student-details-header">
-                    <h3>Student Details</h3>
-                    <button data-element="editStudentButton" class="edit-button" data-student-id="${student.studentId}">Edit</button>
-                </div>
-                ${renderStudentSections(formattedData, "<p>Photo unavailable</p>")}
-            `;
-        });
+        .join("");
 }
 
-function loadFeeDetailsContent(student, contentContainer) {
-    contentContainer.innerHTML = `<h2>Fee Details</h2><p>Loading fee details...</p>`;
-}
+function loadBasicDetailsContent(student, contentContainer) {
+        if (contentContainer.innerHTML.trim() !== "") return; // Prevent redundant reloading
+
+        contentContainer.innerHTML = `<p>Loading student details...</p>`; // ✅ Show loading message
+
+        const formattedData = formatStudentDetails(student);
+        const photoContainer = document.createElement("div");
+
+        displayStudentPhoto(student, photoContainer)
+            .catch((error) => {
+                console.error("❌ Error loading student photo:", error);
+                return "<p>Photo unavailable</p>"; // ✅ Default photo HTML in case of error
+            })
+            .then((photoHtml = photoContainer.innerHTML) => {
+                contentContainer.innerHTML = `
+                    <div class="student-details-header">
+                        <h3>Student Details</h3>
+                        <button data-element="editStudentButton" class="edit-button" data-student-id="${student.studentId}">Edit</button>
+                    </div>
+                    ${renderStudentSections(formattedData, photoHtml)}
+                `;
+            });
+    }
 
 function loadAcademicsContent(student, contentContainer) {
     contentContainer.innerHTML = `<h2>Academics</h2><p>Loading academic details...</p>`;
@@ -390,8 +413,6 @@ function loadAttendanceContent(student, contentContainer) {
 function loadCertificatesContent(student, contentContainer) {
     contentContainer.innerHTML = `<h2>Certificates</h2><p>Loading certificates...</p>`;
 }
-
-
 
 function handleRowClick(event) {
     const row = event.currentTarget;
@@ -445,6 +466,7 @@ export function updateTableBody(tbody, students) {
     tbody.innerHTML = renderRows(formattedStudents);
     attachRowClickEvents();
 }
+
   export function displayStudentPhoto(student, container, defaultPhoto = 'assets/default-photo.png') {
     
         return new Promise((resolve) => {  // Wrap function in a Promise

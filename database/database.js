@@ -84,6 +84,8 @@ const CREATE_FEES_TABLE = `
         coachingFee INTEGER NULL,
         studyMaterialFees INTEGER NOT NULL,
         uniformFees INTEGER NOT NULL,
+        discount INTEGER NULL,
+
         FOREIGN KEY (studentId) REFERENCES students(studentId)
     );
 `;
@@ -188,20 +190,19 @@ export function addStudent(studentData) {
     }
 }
 
-/** FEE MANAGEMENT FUNCTIONS **/
 export function addStudentFees(feeData) {
     try {
         const stmt = db.prepare(`
             INSERT INTO fees (
-                studentId, admissionFees, eligibilityFee, collegeFees, examFees, labFees, coachingFee, studyMaterialFees, uniformFees
+                studentId, admissionFees, eligibilityFee, collegeFees, examFees, labFees, coachingFee, studyMaterialFees, uniformFees, discount
             ) VALUES (
-                ?, ?, ?, ?, ?, ?, ?, ?, ?
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
             )
         `);
 
         const result = stmt.run(
             feeData.studentId, feeData.admissionFees, feeData.eligibilityFee, feeData.collegeFees,
-            feeData.examFees, feeData.labFees, feeData.coachingFee, feeData.studyMaterialFees, feeData.uniformFees
+            feeData.examFees, feeData.labFees, feeData.coachingFee, feeData.studyMaterialFees, feeData.uniformFees, feeData.discount
         );
         console.log("✅ Fee details saved successfully for studentId:", feeData.studentId);
 
@@ -216,13 +217,13 @@ export function updateStudentFees(feeData) {
     try {
         const stmt = db.prepare(`
             UPDATE fees SET
-                admissionFees = ?, eligibilityFee = ?, collegeFees = ?, examFees = ?, labFees = ?, coachingFee = ?, studyMaterialFees = ?, uniformFees = ?
+                admissionFees = ?, eligibilityFee = ?, collegeFees = ?, examFees = ?, labFees = ?, coachingFee = ?, studyMaterialFees = ?, uniformFees = ?, discount = ?
             WHERE studentId = ?
         `);
 
         const result = stmt.run(
             feeData.admissionFees, feeData.eligibilityFee, feeData.collegeFees, feeData.examFees,
-            feeData.labFees, feeData.coachingFee, feeData.studyMaterialFees, feeData.uniformFees,
+            feeData.labFees, feeData.coachingFee, feeData.studyMaterialFees, feeData.uniformFees,feeData.discount,
             feeData.studentId
         );
 

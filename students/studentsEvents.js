@@ -1,10 +1,12 @@
 
-import { gatherStudentData, gatherFeeData, validateForm } from './studentsData.js';
+import { gatherStudentData, validateForm } from './studentsData.js';
 import { displayFormErrors } from './studentsForm.js';
-import { fetchStudentsFromDatabase, filterAndRenderStudents, fetchFeeDetailsFromDatabase } from './studentsData.js';
+import { fetchStudentsFromDatabase, filterAndRenderStudents } from './studentsData.js';
 import { showStudentsTab, displayStudentData } from './studentsUI.js';
 import { elements, initializeElements } from '../utils/sharedElements.js';
-import { studentTabManager, initializeStudentsPage } from './students.js';
+import { studentTabManager } from './students.js';
+import { fetchFeeDetailsFromDatabase, gatherFeeData } from "../fees/fees.js";
+
 
 
 export async function handleStudentFormSubmit(event) {
@@ -79,8 +81,11 @@ export async function handleStudentFormSubmit(event) {
                 console.log("Final Fee Data to be updated:", feeData);
             
                 const result = await window.electron.invoke('updateStudent', studentData);
+                console.log("Update Student Result:", result);
+
                 const feeResult = await window.electron.invoke('updateStudentFees', { studentId, ...feeData });
-            
+                console.log("Update Student Fees Result:", feeResult);
+
                 if (result.success && feeResult.success) {
                     alert(`Student and Fee details updated successfully!`);
                     await fetchStudentsFromDatabase();
@@ -97,7 +102,6 @@ export async function handleStudentFormSubmit(event) {
         alert("An error occurred while submitting the form.");
     }
 }
-
 
 export async function deleteSelectedStudents(students) {
     const selectedCheckboxes = document.querySelectorAll('.select-student-checkbox:checked');

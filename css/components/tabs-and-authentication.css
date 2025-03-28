@@ -78,3 +78,12 @@
     background-color: #fff;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
+
+.ordinal-year {
+    font-family: sans-serif; /* Or any font you prefer */
+}
+
+.ordinal-year sup {
+    font-size: 0.7em; /* Adjust the superscript size as needed */
+    vertical-align: super;
+}

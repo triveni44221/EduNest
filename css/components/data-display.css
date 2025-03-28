@@ -169,12 +169,12 @@
 .dropdown-item:hover {
     background-color: #f0f0f0;
 }
-.student-id-container {
+
+.student-primary-container {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 5px;
-    padding: 15px 30px;
+    padding: 15px 60px;
     margin-top: 30px;
     margin-bottom: 20px;
     font-size: 1.2em;
@@ -184,21 +184,37 @@
     z-index: 11;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     color: #1d1d1d;
-    clip-path: polygon(10% 0%, 90% 0%, 100% 50%, 90% 100%, 10% 100%, 0% 50%); /* Elongated hexagon */
+    clip-path: polygon(10% 0%, 90% 0%, 100% 50%, 90% 100%, 10% 100%, 0% 50%);
     width: fit-content;
     margin-left: auto;
     margin-right: auto;
+    text-align: center;
+    min-width: 50%;
+    white-space: nowrap; /* Ensures text remains in a single line */
 }
 
-.student-id-label {
-    color: #1d1d1d;
+.student-info-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px; /* Adjust spacing between elements */
 }
 
-.student-id-value {
+.infoSeparator {
+    font-weight: normal;
+    margin: 0 5px; /* Fine-tuning spacing around hyphens */
+    color: inherit;
+}
+
+.student-name, .student-class, .student-id {
     color: #1d1d1d;
     font-weight: bold;
 }
-s
+
+
+
+
+
 .student-photo-container {
     float: right;
     width: 150px;

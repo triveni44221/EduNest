@@ -12,7 +12,6 @@ export function attachEventListeners(context, studentTabManager = null) {
     // More contexts can be added as needed
 }
 
-
 function attachStudentEventListeners(studentTabManager) {
     const tabActions = {
         allStudentsTabButton: () => showStudentsTab(studentTabManager),
@@ -29,7 +28,6 @@ function attachStudentEventListeners(studentTabManager) {
         }
     });
 }
-
 
 function attachFilterEventListeners() {
     const filterCheckboxes = [
@@ -48,6 +46,7 @@ function attachFilterEventListeners() {
         }
     });
 }
+
 export function initializeEventListeners(studentTabManager = null) {
     initializeElements();
     setTimeout(() => {

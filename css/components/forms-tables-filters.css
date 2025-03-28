@@ -356,6 +356,7 @@ legend {
     align-items: center;
     gap: 15px; /* Space between the label and radio buttons */
 }
+
 .radio-group {
     display: flex;
     align-items: center; /* Align items vertically */
@@ -377,4 +378,25 @@ legend {
     width: 16px; /* Ensure a uniform size */
     height: 16px;
 }
+
+.comments-container {
+    margin-top: 20px;
+    width: 100%;
+}
+
+.comments-container label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+#additionalComments {
+    width: 100%;
+    padding: 10px;
+    font-size: 1em;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    resize: none; /* Prevent manual resizing */
+}
+
 

@@ -175,7 +175,6 @@ export function getElementsByDataAttribute(attribute = "data-element") {
         renderPaginationButtons();
     }
     
-
     export function sortData(data, key, ascending = true) {
         return data.sort((a, b) => {
             let valueA = a[key];

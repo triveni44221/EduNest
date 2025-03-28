@@ -1,13 +1,13 @@
 // students/studentsForm.js
-import { YES_NO_OPTIONS, YEAR_OPTIONS, GENDER_OPTIONS, GROUP_OPTIONS, MEDIUM_OPTIONS, SECOND_LANGUAGE_OPTIONS, NATIONALITY_OPTIONS, SCHOLARSHIP_OPTIONS, OCCUPATION_OPTIONS, PHYSICALLY_HANDICAPPED_OPTIONS, QUALIFYING_EXAM_OPTIONS, PARENTS_INCOME_OPTIONS, BATCH_YEAR_OPTIONS, COACHING_OPTIONS  } from "./studentsData.js";
+import { YEAR_OPTIONS, GENDER_OPTIONS, GROUP_OPTIONS, MEDIUM_OPTIONS, SECOND_LANGUAGE_OPTIONS, NATIONALITY_OPTIONS, SCHOLARSHIP_OPTIONS, OCCUPATION_OPTIONS, PHYSICALLY_HANDICAPPED_OPTIONS, QUALIFYING_EXAM_OPTIONS, PARENTS_INCOME_OPTIONS, BATCH_YEAR_OPTIONS, COACHING_OPTIONS  } from "./studentsData.js";
 import { calculateDateYearsAgo } from "../utils/dataUtils.js";
-import  TabManager  from '../utils/tabManager.js';
+import { renderFeeFields } from "../fees/fees.js";
 import { capitalizeFirstLetter } from "../utils/uiUtils.js"; 
 import { elements, initializeElements } from '../utils/sharedElements.js';
 import { handleStudentFormSubmit } from './studentsEvents.js';
 import { createStudentPhotoSection } from './studentsUI.js';
 
-function createFormField({ label, elementName, type = "text", options = [], required = false, pattern = "", minLength = "", maxLength = "", min = "", max = "", value = ""}) {
+export function createFormField({ label, elementName, type = "text", options = [], required = false, pattern = "", minLength = "", maxLength = "", min = "", max = "", value = ""}) {
  
     const formGroup = document.createElement('div');
     formGroup.classList.add('form-group');
@@ -71,7 +71,7 @@ function createFormField({ label, elementName, type = "text", options = [], requ
     return formGroup;
 } 
 
-function createFieldset(title, fields) {
+export function createFieldset(title, fields) {
     const fieldset = document.createElement('fieldset');
     const legend = document.createElement('legend');
     legend.textContent = title;
@@ -87,7 +87,7 @@ function createFieldset(title, fields) {
     return fieldset;
 }
 
-function renderForm(container, formFields, fieldsetGroups, adjustedIndexes, isEdit, studentId, studentData) {
+export function renderForm(container, formFields, fieldsetGroups, adjustedIndexes, isEdit, studentId, studentData) {
 
     // Copy these lines from the original renderStudentForm:
     const form = document.createElement('form');
@@ -349,226 +349,6 @@ setTimeout(initializeFormValues, 0); // Call initializeFormValues synchronously
 
     return form;
 }
-
-function renderFeeFields(container, isEdit, studentData, form) {
-    // 3. Fee Details Container and Append logic.
-    if (isEdit) return; // Fee fields should only appear in add mode
-    
-        const feeFieldsContainer = document.createElement('div');
-        feeFieldsContainer.id = 'feeDetailsContainer';
-    
-        const feeFields = [
-        // Fee Details
-        createField('Admission Fees', 'admissionFees', 'number', { required: true }),
-        createField('Eligibility Fee', 'eligibilityFee', 'number', { required: true }),
-        createField('College Fees', 'collegeFees', 'number', { required: true }),
-        createField('Exam Fees', 'examFees', 'number', { required: true }),
-        createField('Practical Fees', 'labFees', 'number', { required: true }),
-        createField('Coaching Fee', 'coachingFee', 'number', { required: true }),
-        createField('Study Material', 'studyMaterialFees', 'number', { required: true }),
-        createField('Uniform Fees', 'uniformFees', 'number', { required: true }),
-    ];
-    const feeFieldset = createFieldset("Fee Details", [
-        feeFields.slice(0, 2),
-        feeFields.slice(2, 4),
-        feeFields.slice(4, 6),
-        feeFields.slice(6, 8)
-    ]);
-    
-    feeFieldsContainer.appendChild(feeFieldset);
-    form.appendChild(feeFieldsContainer);
-    initializeElements();
-    console.log(elements);
-    
-    function updateFieldVisibility(field, dependentFields, visibilityConditions, disableCondition) {
-        console.log("updateFieldVisibility called for:", field.dataset.element);
-    
-        const dependentValues = dependentFields.map(depField => depField.value);
-        const shouldShow = visibilityConditions(...dependentValues);
-        const shouldDisable = disableCondition ? disableCondition(...dependentValues) : !shouldShow;
-    
-        if (!field) {
-            console.error("Field is null or undefined!");
-            return;
-        }
-    
-        if (!field.parentElement) {
-            console.error("Field parent element is null or undefined!");
-            return;
-        }
-    
-        if (field.parentElement) {
-            field.parentElement.style.display = shouldShow ? 'block' : 'none';
-        }
-    
-        if (shouldShow) {
-            field.removeAttribute('disabled');
-            field.setAttribute('required', 'true');
-        } else {
-            if(shouldDisable){
-                field.setAttribute('disabled', 'true');
-            } else {
-                field.removeAttribute('disabled');
-            }
-            field.removeAttribute('required');
-            field.value = '';
-        }
-    
-        console.log("shouldShow for:", field.dataset.element, "is:", shouldShow);
-        console.log("updateFieldVisibility finished for:", field.dataset.element);
-    }
-  
-
-    const classYearSelect = form.querySelector('[data-element="classYear"]');
-    const groupSelect = form.querySelector('[data-element="groupName"]');
-
-
-    function initializeEligibilityFee() {
-        const eligibilityFeeField = form.querySelector('[data-element="eligibilityFee"]');
-        if (!eligibilityFeeField) return;
-    
-        if (!form.querySelector('#eligibilitySelect')) {
-            const eligibilityDropdown = createYesNoDropdown('Eligibility Fee?', 'eligibilitySelect', eligibilityFeeField);
-            eligibilityDropdown.setAttribute('data-eligibility-dropdown', '');
-            eligibilityFeeField.parentElement.before(eligibilityDropdown);
-    
-            const eligibilitySelect = form.querySelector('#eligibilitySelect');
-            if (studentData.eligibilityFeeSelected) {
-                eligibilitySelect.value = studentData.eligibilityFeeSelected;
-            }
-    
-            eligibilitySelect.addEventListener('change', () => {
-                updateFeeFields(); // Call updateFeeFields on change
-            });
-        }
-    }
-    initializeEligibilityFee();
-
-    const updateFeeFields = () => {
-        const selectedGroup = groupSelect.value;
-        console.log("updateFeeFields called, selectedGroup:", selectedGroup);
-// 1. Eligibility Fee Logic
-const eligibilityFeeField = form.querySelector('[data-element="eligibilityFee"]');
-const eligibilitySelect = form.querySelector('#eligibilitySelect');
-if (eligibilityFeeField && eligibilityFeeField.parentElement && eligibilitySelect) {
-    updateFieldVisibility(eligibilityFeeField, [eligibilitySelect], (eligibilityValue) => eligibilityValue === 'yes'); // Show if yes
-}
-    
-        const labFeesField = form.querySelector('[data-element="labFees"]');
-        if (labFeesField && labFeesField.parentElement) { // Add null check
-            updateFieldVisibility(labFeesField, [classYearSelect, groupSelect], (year, group) => year === 'second' && (group === 'mpc' || group === 'bipc'));
-        }
-    
-        const coachingFeeField = form.querySelector('[data-element="coachingFee"]');
-    if (coachingFeeField && coachingFeeField.parentElement) {
-        console.log("Coaching fee field found");
-        // Coaching Dropdown and Fee Logic
-        const coachingDropdownDiv = form.querySelector('.form-group[data-coaching-dropdown]');
-        if (coachingDropdownDiv) {
-            coachingDropdownDiv.remove();
-        }
-
-        if (selectedGroup === 'mpc') {
-            const eapcetDropdown = createYesNoDropdown('EAPCET Coaching?', 'eapcetCoachingSelect', coachingFeeField);
-            eapcetDropdown.setAttribute('data-coaching-dropdown', '');
-            coachingFeeField.parentElement.before(eapcetDropdown);
-
-            const eapcetSelect = form.querySelector('#eapcetCoachingSelect');
-            if (eapcetSelect) {
-                updateFieldVisibility(
-                    coachingFeeField,
-                    [groupSelect, eapcetSelect],
-                    (group, coachingSelectValue) => group === 'mpc' && coachingSelectValue === 'yes',
-                    (group, coachingSelectValue) => group !== 'mpc' //disable condition
-                );
-            }
-        } else if (selectedGroup === 'bipc') {
-            const neetDropdown = createYesNoDropdown('NEET Coaching?', 'neetCoachingSelect', coachingFeeField);
-            neetDropdown.setAttribute('data-coaching-dropdown', '');
-            coachingFeeField.parentElement.before(neetDropdown);
-
-            const neetSelect = form.querySelector('#neetCoachingSelect');
-            if (neetSelect) {
-                updateFieldVisibility(
-                    coachingFeeField,
-                    [groupSelect, neetSelect],
-                    (group, coachingSelectValue) => group === 'bipc' && coachingSelectValue === 'yes',
-                    (group, coachingSelectValue) => group !== 'bipc' //disable condition
-                );
-            }
-        } else {
-            coachingFeeField.parentElement.style.display = 'none';
-            console.log("Coaching fee field not found");
-            updateFieldVisibility(
-                coachingFeeField,
-                [groupSelect],
-                (group) => false,
-                (group) => true //disable condition
-            );
-        }
-    }
-    };
-    classYearSelect.addEventListener('change', updateFeeFields);
-    groupSelect.addEventListener('change', updateFeeFields);
-
-
-    function updateFieldLabel(fieldElement, dependentField, condition, trueLabel, falseLabel) {
-        const updateLabel = () => {
-            if (fieldElement && fieldElement.parentElement) { // Add null check here
-                fieldElement.parentElement.querySelector('label').textContent = condition(dependentField.value) ? trueLabel : falseLabel;
-            }
-        };
-    
-        updateLabel(); // Initial label update
-        dependentField.addEventListener('change', updateLabel);
-    }
-
-    // Get the Scholarship select element and College Fees field
-    const scholarshipSelect = form.querySelector('[data-element="scholarship"]');
-    const collegeFeesField = form.querySelector('[data-element="collegeFees"]');
-
-    // Update College Fees label based on Scholarship
-    updateFieldLabel(
-        collegeFeesField,
-        scholarshipSelect,
-        (scholarshipValue) => scholarshipValue === 'yes',
-        'College Fees with SS',
-        'College Fees'
-    );
-    updateFeeFields(); // Initial setup    // Event listeners for fee fields
-
-}
-
-function createYesNoDropdown(label, selectId, fieldToToggle) {
-        const dropdownDiv = document.createElement('div');
-        dropdownDiv.className = 'form-group';
-
-        const dropdownLabel = document.createElement('label');
-        dropdownLabel.textContent = label;
-        dropdownDiv.appendChild(dropdownLabel);
-
-        const dropdownSelect = document.createElement('select');
-        dropdownSelect.id = selectId;
-
-        YES_NO_OPTIONS.forEach(option => {
-            const optionElement = document.createElement('option');
-            optionElement.value = option.value;
-            optionElement.textContent = option.label;
-            dropdownSelect.appendChild(optionElement);
-        });
-        dropdownSelect.value = 'no'; // Default to 'No'
-
-        dropdownDiv.appendChild(dropdownSelect);
-
-        const toggleVisibility = () => {
-            fieldToToggle.parentElement.style.display = dropdownSelect.value === 'yes' ? 'block' : 'none';
-        };
-
-        dropdownSelect.addEventListener('change', toggleVisibility);
-        toggleVisibility(); // Initial visibility
-
-        return dropdownDiv;
-    }
 
 export function showEditStudent(studentTabManager, studentData) {
      // Ensure tabManager is initialized
