@@ -158,26 +158,34 @@ export function gatherStudentData(perm_same) {
 
     return studentData;
 }
-
 export async function fetchStudentsFromDatabase() {
+    console.log("Fetching updated students...");
+
     try {
         const result = await window.electron.invoke('fetchStudents');
-        
+
         if (result && Array.isArray(result)) {
             setTotalStudents(result.length);
-            return result;
+            
+            // ✅ Instead of `students = result`, update the existing array
+            students.length = 0;  // Clear the existing array
+            students.push(...result);  // Push new values into the same array
+            
+            console.log("✅ Updated students:", students);
+            return students;
         } else {
             console.warn("⚠️ No students found in DB.");
             setTotalStudents(0);
+            students.length = 0;  // Clear the array instead of reassigning
             return [];
         }
     } catch (error) {
         console.error('❌ Error fetching students from local disk:', error);
         setTotalStudents(0);
+        students.length = 0;  // Clear the array instead of reassigning
         return [];
     }
 }
-
 export async function initializeApp() {
     try {
         await fetchStudentsFromDatabase(); 

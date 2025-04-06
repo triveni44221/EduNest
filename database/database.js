@@ -78,17 +78,20 @@ const CREATE_FEES_TABLE = `
         studentId INTEGER PRIMARY KEY,
         admissionFees INTEGER NOT NULL,
         eligibilityFee INTEGER NULL,
+        isEligibilityApplicable INTEGER NULL,
         collegeFees INTEGER NOT NULL,
         examFees INTEGER NOT NULL,
         labFees INTEGER NULL,
         coachingFee INTEGER NULL,
-        studyMaterialFees INTEGER NOT NULL,
-        uniformFees INTEGER NOT NULL,
+        isEapcetCoachingApplicable INTEGER NULL,
+        isNeetCoachingApplicable INTEGER NULL,
+        studyMaterialFees INTEGER NULL,
+        uniformFees INTEGER NULL,
         discount INTEGER NULL,
 
         FOREIGN KEY (studentId) REFERENCES students(studentId)
-    );
-`;
+    ); 
+`;  
 
 // Create tables
 db.exec(CREATE_STUDENTS_TABLE);
@@ -194,15 +197,15 @@ export function addStudentFees(feeData) {
     try {
         const stmt = db.prepare(`
             INSERT INTO fees (
-                studentId, admissionFees, eligibilityFee, collegeFees, examFees, labFees, coachingFee, studyMaterialFees, uniformFees, discount
+                studentId, admissionFees, eligibilityFee, isEligibilityApplicable, collegeFees, examFees, labFees, coachingFee, isEapcetCoachingApplicable, isNeetCoachingApplicable, studyMaterialFees, uniformFees, discount
             ) VALUES (
-                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
             )
         `);
 
         const result = stmt.run(
-            feeData.studentId, feeData.admissionFees, feeData.eligibilityFee, feeData.collegeFees,
-            feeData.examFees, feeData.labFees, feeData.coachingFee, feeData.studyMaterialFees, feeData.uniformFees, feeData.discount
+            feeData.studentId, feeData.admissionFees, feeData.eligibilityFee, feeData.isEligibilityApplicable, feeData.collegeFees,
+            feeData.examFees, feeData.labFees, feeData.coachingFee, feeData.isEapcetCoachingApplicable, feeData.isNeetCoachingApplicable, feeData.studyMaterialFees, feeData.uniformFees, feeData.discount
         );
         console.log("✅ Fee details saved successfully for studentId:", feeData.studentId);
 
@@ -217,13 +220,14 @@ export function updateStudentFees(feeData) {
     try {
         const stmt = db.prepare(`
             UPDATE fees SET
-                admissionFees = ?, eligibilityFee = ?, collegeFees = ?, examFees = ?, labFees = ?, coachingFee = ?, studyMaterialFees = ?, uniformFees = ?, discount = ?
+                admissionFees = ?, eligibilityFee = ?, collegeFees = ?, isEligibilityApplicable = ?, examFees = ?, 
+                labFees = ?, coachingFee = ?, isEapcetCoachingApplicable = ?, isNeetCoachingApplicable = ?, studyMaterialFees = ?, uniformFees = ?, discount = ?
             WHERE studentId = ?
         `);
 
         const result = stmt.run(
-            feeData.admissionFees, feeData.eligibilityFee, feeData.collegeFees, feeData.examFees,
-            feeData.labFees, feeData.coachingFee, feeData.studyMaterialFees, feeData.uniformFees,feeData.discount,
+            feeData.admissionFees, feeData.eligibilityFee, feeData.collegeFees, feeData.isEligibilityApplicable, feeData.examFees,
+            feeData.labFees, feeData.coachingFee,feeData.isEapcetCoachingApplicable, feeData.isNeetCoachingApplicable, feeData.studyMaterialFees, feeData.uniformFees,feeData.discount,
             feeData.studentId
         );
 
@@ -249,14 +253,27 @@ export async function getStudentFees(studentId) {
     }
 }
 
+export async function getStudentById(studentId) {
+    try {
+        const query = 'SELECT * FROM students WHERE studentId = ?';
+        const result = await executeQuery(query, [studentId]);
+        if (result && result.length > 0) {
+            return result[0]; // Return the first matching row
+        } else {
+            return null; // Return null if no student is found
+        }
+    } catch (error) {
+        console.error("Error fetching student by ID:", error);
+        return null; // Or throw an error object
+    }
+}
+
 export function fetchStudents(limit = 30, offset = 0) {
     limit = parseInt(limit, 10);
     offset = parseInt(offset, 10);
 
     const query = `SELECT * FROM students LIMIT ? OFFSET ?`;
-    console.log("fetchStudents called with limit:", limit, "offset:", offset); // Add this
     const result = executeQuery(query, [limit, offset]);
-    console.log("executeQuery result:", result); // Add this
     return result;
 }
 

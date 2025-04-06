@@ -23,8 +23,16 @@ export function getElementsByDataAttribute(attribute = "data-element") {
     }
     
     export function toggleVisibility({ show = [], hide = [] }) {
-        show.forEach((element) => element?.classList.remove('hidden'));
-        hide.forEach((element) => element?.classList.add('hidden'));
+        show.forEach((element) => {
+            if (element) {
+                element.classList.remove('hidden');
+            }
+        });
+        hide.forEach((element) => {
+            if (element) {
+                element.classList.add('hidden');
+            }
+        });
     }
 
     export let currentPage = 1;
@@ -200,4 +208,45 @@ export function getElementsByDataAttribute(attribute = "data-element") {
             }
         });
     }
+
+  export function createSubmitButton(form, isEdit, submitHandler) {
+    console.log("createSubmitButton called, form:", form);
+
+    // Ensure submitButton is defined before using it
+    let submitButton = form.querySelector('.submit-button');
+
+    if (submitButton) {
+        console.log("Removing existing submit button...");
+        submitButton.remove();
+    }
+
+    submitButton = document.createElement('button');
+    submitButton.type = 'submit';
+    submitButton.className = 'submit-button';
+    submitButton.textContent = isEdit ? 'Update' : 'Submit';
+
+    
+    console.log("Appending submit button to form:", form);
+
+    form.appendChild(submitButton);
+    form.addEventListener('submit', async function (event) {
+        event.preventDefault(); 
+        console.log("Submit button clicked");
+        const success = await submitHandler(event);
+        if (success) {
+            console.log('Form submitted successfully');
+        }
+    });
+
+    return submitButton;
+}
+
+export function normalizeBooleans(data, booleanFields = []) {
+    const normalized = { ...data };
+    for (const key of booleanFields) {
+        normalized[key] = data[key] === 1;
+    }
+    return normalized;
+}
+
   

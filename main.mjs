@@ -6,7 +6,7 @@ import bcrypt from 'bcrypt';
 import dotenv from 'dotenv';
 import Store from 'electron-store';
 import { addStudent, fetchStudents, updateStudent, deleteStudents, addStudentFees, updateStudentFees  } from './database/database.js';
-import { getStudentFees } from './database/database.js'; // Import function
+import { getStudentFees, getStudentById } from './database/database.js'; // Import function
 
 dotenv.config();
 const store = new Store();
@@ -101,6 +101,18 @@ ipcMain.handle('addStudentFees', async (event, feeData) => addStudentFees(feeDat
 
 ipcMain.handle('getStudentFees', async (event, { studentId }) => {
     return getStudentFees(studentId);
+});
+
+ipcMain.handle('getStudentById', async (event, studentId) => {
+    console.log(`ipcMain.handle: Received getStudentById request for ID ${studentId}`);
+    try {
+        const studentDetails = await getStudentById(studentId);
+        console.log(`ipcMain.handle: getStudentById returned:`, studentDetails);
+        return studentDetails;
+    } catch (error) {
+        console.error("ipcMain.handle: Error fetching student details:", error);
+        return null; // Or throw an error object
+    }
 });
 
 

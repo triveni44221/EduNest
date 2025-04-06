@@ -1,16 +1,16 @@
 import { fetchStudentsFromDatabase } from './studentsData.js';
 import TabManager, { createTabButton, createTabContent } from '../utils/tabManager.js';
 import { initializeEventListeners } from '../utils/eventUtils.js';
-import { showEditStudent, renderStudentForm } from './studentsForm.js';
+import { renderStudentForm , showEditStudent } from './studentsForm.js';
 import { toggleVisibility, sortData, normalizeString, capitalizeFirstLetter, renderPaginationControls} from '../utils/uiUtils.js';
 import { elements, initializeElements } from '../utils/sharedElements.js';
 import { formatStudentData } from '../utils//dataUtils.js';
 import { deleteSelectedStudents } from './studentsEvents.js' ;
 import { studentTabManager } from './students.js';
-import { loadFeeDetailsContent } from "../fees/fees.js";
+import { loadFeeDetailsContent , showEditFeeForm} from "../fees/fees.js";
 
 
-let students = [];
+export let students = [];
 
 export async function showStudentsTab(studentTabManager) {
     initializeEventListeners(studentTabManager);
@@ -137,14 +137,18 @@ function formatOrdinalClassYear(year) {
     return `<span class="ordinal-year">${ordinal}</span>`;
 }
 
+
 export function handleEditButtonClick(event) {
-    if (event.target.dataset.element === "editStudentButton") {
-        const studentId = event.target.dataset.studentId;
-        const student = students.find(student => student.studentId === parseInt(studentId, 10));
-        if (student) {
-            console.log("Calling showEditStudent with:", studentTabManager);
-            showEditStudent(studentTabManager, student);
-        }
+    const targetElement = event.target.dataset.element;
+    const studentId = event.target.dataset.studentId;
+    const student = students.find(student => student.studentId === parseInt(studentId, 10));
+
+    if (targetElement === "editStudentButton" && student) {
+        console.log("Calling showEditStudent with:", studentTabManager);
+        showEditStudent(studentTabManager, student);
+    } else if (targetElement === "editFeeButton" && student) {
+        console.log("Edit Fee Button Clicked for student ID:", studentId);
+        showEditFeeForm(student);
     }
 }
 
@@ -247,13 +251,11 @@ export function displayStudentData(studentId) {
         show: [elements.studentDataContainer],
         hide: [elements.studentListContainer, elements.filtersContainer, elements.paginationContainer]
     });
-
     // Initialize student tabs (which will load basic details when clicked)
     displayStudentTabs(student);
 }
 
-function displayStudentTabs(student) {
-    console.log("📌 Running displayStudentTabs for student:", student);
+export function displayStudentTabs(student) {
 
     const studentDataContainer = elements.studentDataContainer;
     if (!studentDataContainer) {
@@ -331,7 +333,7 @@ studentPrimaryContainer.innerHTML = `
     tabButtons[0].click();
 }
 
-function renderStudentSections(formattedData, photoHtml) {
+export function renderStudentSections(formattedData, photoHtml) {
     const sections = {
         "Admission Details": ["studentId", "studentName", "admissionNumber", "dateOfAdmission", "classYear", "groupName", "medium", "secondLanguage", "batchYear"],
         "Academic Details": ["qualifyingExam", "gpa", "yearOfExam", "hallTicketNumber"],
@@ -378,29 +380,70 @@ function renderStudentSections(formattedData, photoHtml) {
         .join("");
 }
 
-function loadBasicDetailsContent(student, contentContainer) {
-        if (contentContainer.innerHTML.trim() !== "") return; // Prevent redundant reloading
-
-        contentContainer.innerHTML = `<p>Loading student details...</p>`; // ✅ Show loading message
-
-        const formattedData = formatStudentDetails(student);
-        const photoContainer = document.createElement("div");
-
-        displayStudentPhoto(student, photoContainer)
-            .catch((error) => {
-                console.error("❌ Error loading student photo:", error);
-                return "<p>Photo unavailable</p>"; // ✅ Default photo HTML in case of error
-            })
-            .then((photoHtml = photoContainer.innerHTML) => {
-                contentContainer.innerHTML = `
-                    <div class="student-details-header">
-                        <h3>Student Details</h3>
-                        <button data-element="editStudentButton" class="edit-button" data-student-id="${student.studentId}">Edit</button>
-                    </div>
-                    ${renderStudentSections(formattedData, photoHtml)}
-                `;
-            });
+export async function loadStudentSection({
+    student,contentContainer,section,title,fetchDataFn,formatDataFn,editButtonId,renderIfEmptyFn = null, forceReload = false}) 
+{
+   
+    if (!forceReload && contentContainer && contentContainer.querySelector(`.${section}-details`)) {
+        return;
     }
+    contentContainer.innerHTML = `<p>Loading ${title.toLowerCase()}...</p>`;
+
+    try {
+        const sectionData = await fetchDataFn(student.studentId);
+
+        if ((!sectionData || Object.keys(sectionData).length === 0) && renderIfEmptyFn) {
+            contentContainer.innerHTML = '';
+
+            await renderIfEmptyFn(contentContainer, false, student); // isEdit = false
+            return;
+        }
+
+        const formattedHtml = await formatDataFn(sectionData, student);
+
+        contentContainer.innerHTML = `
+            <div class="student-details-header">
+                <h3>${title}</h3>
+                <button 
+                    class="edit-button" 
+                    data-element="${editButtonId}" 
+                    data-student-id="${student.studentId}" 
+                    data-section="${section}"
+                >
+                    Edit
+                </button>
+            </div>
+            ${formattedHtml}
+        `;
+    } catch (error) {
+        console.error(`Error loading ${title.toLowerCase()}:`, error);
+        contentContainer.innerHTML = `<p>Error fetching ${title.toLowerCase()}.</p>`;
+    }
+}
+
+export async function loadBasicDetailsContent(student, contentContainer) {
+    await loadStudentSection({
+        student,
+        contentContainer,
+        section: 'basic',
+        title: 'Student Details',
+        fetchDataFn: async (studentId) => {
+            return await window.electron.invoke('getStudentById', studentId);
+        },
+        formatDataFn: async (data, student) => {
+            const formattedData = formatStudentDetails(data);
+            const photoContainer = document.createElement("div");
+            try {
+                await displayStudentPhoto(data, photoContainer);
+            } catch (error) {
+                console.error("❌ Error loading student photo:", error);
+                photoContainer.innerHTML = "<p>Photo unavailable</p>";
+            }
+            return renderStudentSections(formattedData, photoContainer.innerHTML);
+        },
+        editButtonId: "editStudentButton"
+    });
+}
 
 function loadAcademicsContent(student, contentContainer) {
     contentContainer.innerHTML = `<h2>Academics</h2><p>Loading academic details...</p>`;

@@ -43,7 +43,8 @@ function createTabButton(id, label) {
 
 function createTabContent(id) {
     const content = document.createElement('div');
-    content.setAttribute('data-element', id);
+    content.setAttribute('id', id);                              // ✅ so getElementById works
+    content.setAttribute('data-element', id.replace("Content", "")); // keeps compatibility with tab logic
     content.classList.add('tab-content', 'hidden');
     return content;
 }

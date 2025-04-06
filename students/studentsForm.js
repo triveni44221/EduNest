@@ -1,8 +1,7 @@
 // students/studentsForm.js
 import { YEAR_OPTIONS, GENDER_OPTIONS, GROUP_OPTIONS, MEDIUM_OPTIONS, SECOND_LANGUAGE_OPTIONS, NATIONALITY_OPTIONS, SCHOLARSHIP_OPTIONS, OCCUPATION_OPTIONS, PHYSICALLY_HANDICAPPED_OPTIONS, QUALIFYING_EXAM_OPTIONS, PARENTS_INCOME_OPTIONS, BATCH_YEAR_OPTIONS, COACHING_OPTIONS  } from "./studentsData.js";
 import { calculateDateYearsAgo } from "../utils/dataUtils.js";
-import { renderFeeFields } from "../fees/fees.js";
-import { capitalizeFirstLetter } from "../utils/uiUtils.js"; 
+import { capitalizeFirstLetter, createSubmitButton} from "../utils/uiUtils.js"; 
 import { elements, initializeElements } from '../utils/sharedElements.js';
 import { handleStudentFormSubmit } from './studentsEvents.js';
 import { createStudentPhotoSection } from './studentsUI.js';
@@ -87,16 +86,14 @@ export function createFieldset(title, fields) {
     return fieldset;
 }
 
-export function renderForm(container, formFields, fieldsetGroups, adjustedIndexes, isEdit, studentId, studentData) {
+export function renderForm(container, formFields, fieldsetGroups, adjustedIndexes, isEdit, studentId, studentData, submitHandler) {
 
-    // Copy these lines from the original renderStudentForm:
     const form = document.createElement('form');
     form.setAttribute('data-element', isEdit ? 'editStudentForm' : 'addStudentForm');
     formFields.forEach(field => {
-        field.value = studentData[field.elementName] || field.value || ""; // You'll need to pass studentData to renderForm or handle values differently
+        field.value = studentData[field.elementName] || field.value || ""; 
     });
     form.setAttribute('data-form-type', isEdit ? 'edit' : 'add');
-    form.removeEventListener('submit', handleStudentFormSubmit);
 
     container.innerHTML = '';
     form.innerHTML = '';
@@ -119,9 +116,7 @@ export function renderForm(container, formFields, fieldsetGroups, adjustedIndexe
         container.prepend(studentIdContainer);
     }
 
- 
-    // Generate fieldsets dynamically
-    Object.entries(fieldsetGroups).forEach(([groupName, rows], index) => {
+     Object.entries(fieldsetGroups).forEach(([groupName, rows], index) => {
         const start = index === 0 ? 0 : adjustedIndexes[index - 1];
         const end = adjustedIndexes[index];
 
@@ -132,11 +127,7 @@ export function renderForm(container, formFields, fieldsetGroups, adjustedIndexe
         form.appendChild(fieldset);
     });
 
-    const submitButton = document.createElement('button');
-    submitButton.type = 'submit';
-    submitButton.className = 'submit-button';
-    submitButton.textContent = isEdit ? 'Update' : 'Submit';
-    form.appendChild(submitButton);
+    const submitButton = createSubmitButton(form, isEdit, submitHandler);
 
     container.appendChild(form);
     return { form, submitButton };
@@ -153,6 +144,10 @@ export function renderStudentForm(container, isEdit = false, studentData = {}) {
         console.error("Form container not found!");
         return;
     }
+
+    const studentFormContainer = document.createElement('div');
+    studentFormContainer.id = 'studentFormContainer';
+    container.appendChild(studentFormContainer);
 
     let studentId = studentData && studentData.studentId !== undefined ? studentData.studentId : undefined;
 
@@ -214,7 +209,6 @@ const formFields = [
 
 ];
 
-// Field grouping logic
 const fieldsetGroups = {
     'Admission Details': [[0], [1, 2, 3, 4], [5, 6, 7, 8]],
     'Personal Details': [[0, 1], [2, 3, 4], [5, 6, 7], [8, 9], [10, 11]],
@@ -223,11 +217,9 @@ const fieldsetGroups = {
     'Academic Details': [[0, 1, 2, 3]],
 };
 
-// Adjust slice indexes based on `isEdit`
 const adjustedIndexes = [9, 21, 27, 34, 38, 46];
 
-// Call the generic renderForm function
-const { form, submitButton } = renderForm(container, formFields, fieldsetGroups, adjustedIndexes, isEdit, studentId, studentData);
+const { form } = renderForm(studentFormContainer, formFields, fieldsetGroups, adjustedIndexes, isEdit, studentId, studentData, handleStudentFormSubmit);
 
  // 1. Photo Section Logic
  if (fieldsetGroups['Admission Details']) {
@@ -339,19 +331,13 @@ function initializeFormValues() {
     handleOtherNationalityField(nationalitySelect.value);
 }
 
-renderFeeFields(container, isEdit, studentData, form); // Pass form here
-
-setTimeout(initializeFormValues, 0); // Call initializeFormValues synchronously
-
-    form.appendChild(submitButton);
-
-    form.addEventListener('submit', handleStudentFormSubmit);
+setTimeout(initializeFormValues, 0); 
 
     return form;
+    
 }
 
 export function showEditStudent(studentTabManager, studentData) {
-     // Ensure tabManager is initialized
      if (!studentTabManager) {
         console.error('❌ studentTabManager is not initialized.');
         return;
@@ -361,8 +347,16 @@ export function showEditStudent(studentTabManager, studentData) {
         console.error('Received:', studentTabManager);
         return;
     }
-    // Switch to the "Add Student" tab using TabManager
     studentTabManager.switchTab(elements.addStudentTabButton);
+     // Remove previous form if it exists
+     const existingForm = document.querySelector('[data-element="editStudentForm"]');
+     if (existingForm) {
+         existingForm.remove();
+     }
+
+     // Ensure container is empty before rendering new form
+    elements.addStudentFormContainer.innerHTML = "";
+
 
     localStorage.removeItem("addStudentFormData");
    
