@@ -5,6 +5,8 @@ import { capitalizeFirstLetter, createSubmitButton} from "../utils/uiUtils.js";
 import { elements, initializeElements } from '../utils/sharedElements.js';
 import { handleStudentFormSubmit } from './studentsEvents.js';
 import { createStudentPhotoSection } from './studentsUI.js';
+import { studentTabManager } from './students.js';
+
 
 export function createFormField({ label, elementName, type = "text", options = [], required = false, pattern = "", minLength = "", maxLength = "", min = "", max = "", value = ""}) {
  
@@ -94,6 +96,10 @@ export function renderForm(container, formFields, fieldsetGroups, adjustedIndexe
         field.value = studentData[field.elementName] || field.value || ""; 
     });
     form.setAttribute('data-form-type', isEdit ? 'edit' : 'add');
+    if (isEdit && studentId !== undefined) {
+        form.dataset.studentId = studentId;
+    }
+    
 
     container.innerHTML = '';
     form.innerHTML = '';
@@ -114,6 +120,7 @@ export function renderForm(container, formFields, fieldsetGroups, adjustedIndexe
         studentIdContainer.appendChild(studentIdValue);
 
         container.prepend(studentIdContainer);
+
     }
 
      Object.entries(fieldsetGroups).forEach(([groupName, rows], index) => {
@@ -191,7 +198,7 @@ const formFields = [
     createField('Identification Mark 1', 'identificationMark1', 'text'),
     createField('Identification Mark 2', 'identificationMark2', 'text'),
 
-    // Parent Details
+    // Parents' Details
     createField("Father's Name", 'fathersName', 'text', { minLength: 3, required: true }),
     createField("Father's Cell No.", 'fatherCell', 'text', { pattern: '^[6789]\\d{9}$', maxLength: 10, required: true }),
     createField("Father's Occupation", 'fatherOccupation', 'select', { options: OCCUPATION_OPTIONS, required: true, value: studentData.fatherOccupation }),
@@ -336,7 +343,81 @@ setTimeout(initializeFormValues, 0);
     return form;
     
 }
+export async function showEditEntity({
+    entityType,
+    containerElement,
+    clearContainer = true,
+    switchTabCallback,
+    fetchDetailsCallback,
+    renderCallback,
+    afterRenderCallback,
+    data,
+    formDataKeyToRemove,
+    formSelector,
+}) {
+    try {
+        if (switchTabCallback) switchTabCallback();
 
+        // Optional: clear old form or container
+        if (clearContainer && containerElement) {
+            const existingForm = formSelector ? document.querySelector(formSelector) : null;
+            if (existingForm) existingForm.remove();
+
+            containerElement.innerHTML = '';
+        }
+
+        // Remove any saved draft data (if needed)
+        if (formDataKeyToRemove) {
+            localStorage.removeItem(formDataKeyToRemove);
+        }
+
+        // Fetch extra details (if needed)
+        let enrichedData = data;
+        if (fetchDetailsCallback) {
+            const details = await fetchDetailsCallback(data.studentId);
+            enrichedData = { ...data, ...details };
+        }
+
+        // Render the form
+        await renderCallback(containerElement, true, enrichedData);
+
+        // Run any extra setup
+        if (afterRenderCallback) {
+            afterRenderCallback(enrichedData);
+        }
+
+    } catch (err) {
+        console.error(`Error rendering ${entityType} edit form:`, err);
+        if (containerElement) {
+            containerElement.innerHTML = `<p>Error loading ${entityType} form.</p>`;
+        }
+    }
+}
+
+export function showEditStudent(studentTabManager, studentData) {
+    showEditEntity({
+        entityType: 'student',
+        containerElement: elements.addStudentFormContainer,
+        switchTabCallback: () => studentTabManager?.switchTab(elements.addStudentTabButton),
+        renderCallback: renderStudentForm,
+        afterRenderCallback: initializeElements,
+        formDataKeyToRemove: "addStudentFormData",
+        formSelector: '[data-element="editStudentForm"]',
+        data: studentData,
+    });
+}
+
+export function displayFormErrors(errors) {
+    for (const field in errors) {
+        const errorElement = elements[`${field}Error`];
+        if (errorElement) {
+            errorElement.textContent = errors[field];
+        }
+    }
+}
+
+
+/*
 export function showEditStudent(studentTabManager, studentData) {
      if (!studentTabManager) {
         console.error('❌ studentTabManager is not initialized.');
@@ -373,14 +454,4 @@ export function showEditStudent(studentTabManager, studentData) {
             console.error("Edit student form not found.");
         }
     }, 0);
-}
-
-export function displayFormErrors(errors) {
-    for (const field in errors) {
-        const errorElement = elements[`${field}Error`];
-        if (errorElement) {
-            errorElement.textContent = errors[field];
-        }
-    }
-}
-
+}*/

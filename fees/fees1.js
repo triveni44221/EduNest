@@ -1,4 +1,4 @@
-import { createField , createFieldset, showEditEntity} from '../students/studentsForm.js';
+import { createField , createFieldset} from '../students/studentsForm.js';
 import { YES_NO_OPTIONS } from "../students/studentsData.js";
 import { loadStudentSection , students} from "../students/studentsUI.js";
 import { elements, initializeElements } from '../utils/sharedElements.js';
@@ -14,6 +14,7 @@ function createYesNoDropdown(label, selectId, fieldToToggle) {
 
     const dropdownSelect = document.createElement('select');
     dropdownSelect.id = selectId;
+    // Add a data attribute to store whether 'yes' was selected
     dropdownSelect.dataset.selectedValue = 'no';
 
     YES_NO_OPTIONS.forEach(option => {
@@ -22,22 +23,25 @@ function createYesNoDropdown(label, selectId, fieldToToggle) {
         optionElement.textContent = option.label;
         dropdownSelect.appendChild(optionElement);
     });
-    dropdownSelect.value = 'no';
+    dropdownSelect.value = 'no'; // Default to 'No'
 
     dropdownDiv.appendChild(dropdownSelect);
 
     const toggleVisibility = () => {
         fieldToToggle.parentElement.style.display = dropdownSelect.value === 'yes' ? 'block' : 'none';
+        // Update the data attribute on change
         dropdownSelect.dataset.selectedValue = dropdownSelect.value;
     };
 
     dropdownSelect.addEventListener('change', toggleVisibility);
-    toggleVisibility(); 
+    toggleVisibility(); // Initial visibility
 
     return dropdownDiv;
 }
 
 export async function renderFeeFields(container, isEdit, studentData) {
+   // container.id = 'feeTabContent';
+
     container.innerHTML = '';
 
     const feeForm = document.createElement('form');
@@ -144,13 +148,13 @@ const submitButton = createSubmitButton(feeForm, isEdit, handleFeeFormSubmit);
             const eligibilitySelect = container.querySelector('#eligibilitySelect');
             if (studentData.isEligibilityApplicable === true) {
                 eligibilitySelect.value = 'yes';
-                eligibilitySelect.dataset.selectedValue = 'yes'; 
+                eligibilitySelect.dataset.selectedValue = 'yes'; // Update data attribute
                 eligibilityFeeField.parentElement.style.display = 'block';
             } else {
                 eligibilitySelect.value = 'no';
-                eligibilitySelect.dataset.selectedValue = 'no'; 
+                eligibilitySelect.dataset.selectedValue = 'no'; // Update data attribute
                 eligibilityFeeField.parentElement.style.display = 'none';
-                eligibilityFeeField.value = ''; 
+                eligibilityFeeField.value = ''; // Clear the value if 'No'
             }
 
 
@@ -222,6 +226,7 @@ const submitButton = createSubmitButton(feeForm, isEdit, handleFeeFormSubmit);
 
                 const neetSelect = container.querySelector('#neetCoachingSelect');
                 if (neetSelect) {
+                    // Set the dropdown value based on studentData
                     if (studentData.isNeetCoachingApplicable === true) {
                         neetSelect.value = 'yes';
                         neetSelect.dataset.selectedValue = 'yes';
@@ -275,9 +280,13 @@ export async function handleFeeFormSubmit(event) {
     
     const feeData = gatherFeeData();
 
-    const payload = { studentId: studentId, ...feeData };
+    const payload = { studentId: studentId, ...feeData }; // full payload = 13 fields
 
+    // 🔍 Log the payload before sending to database
     console.log("📝 Fee form submission payload:", payload);
+
+
+
 
     let feeResult;
 
@@ -367,11 +376,13 @@ export function gatherFeeData() {
     return {
         admissionFees: getFeeValue(elements.admissionFees),
         eligibilityFee: getFeeValue(elements.eligibilityFee),
+        // Include the dropdown selection values
         isEligibilityApplicable: eligibilitySelect?.value === 'yes' ? 1 : 0,
         collegeFees: getFeeValue(elements.collegeFees),
         examFees: getFeeValue(elements.examFees),
         labFees: getFeeValue(elements.labFees),
         coachingFee: (isEapcetApplicable || isNeetApplicable) ? getFeeValue(elements.coachingFee) : null,
+        // Include coaching dropdown selection based on group
         isEapcetCoachingApplicable: eapcetCoachingSelect?.value === 'yes' ? 1 : null,
         isNeetCoachingApplicable: neetCoachingSelect?.value === 'yes' ? 1 : null,
         studyMaterialFees: getFeeValue(elements.studyMaterialFees),
@@ -393,14 +404,14 @@ export async function fetchFeeDetailsFromDatabase(studentId) {
             return normalizedData;
         } else {
             console.warn("No existing fee data found for student ID:", studentId);
-            return {}; 
+            return {}; // Return an empty object if no data is found
         }
     } catch (error) {
         console.error("Error fetching fee details:", error);
-        return {}; 
+        return {}; // Return an empty object to avoid breaking the form
     }
 }
-/*
+
 export async function showEditFeeForm(student) {
 
     const contentContainer = document.getElementById('feeTabContent');
@@ -420,14 +431,4 @@ export async function showEditFeeForm(student) {
         console.error("Error loading fee details for edit:", error);
         contentContainer.innerHTML = `<p>Error loading fee edit form.</p>`;
     }
-}*/
-
-export function showEditFeeForm(student) {
-    showEditEntity({
-        entityType: 'fee',
-        containerElement: document.getElementById('feeTabContent'),
-        fetchDetailsCallback: fetchFeeDetailsFromDatabase,
-        renderCallback: renderFeeFields,
-        data: student,
-    });
 }

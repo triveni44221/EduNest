@@ -193,6 +193,7 @@ export function addStudent(studentData) {
     }
 }
 
+/*
 export function addStudentFees(feeData) {
     try {
         const stmt = db.prepare(`
@@ -234,6 +235,49 @@ export function updateStudentFees(feeData) {
         return { success: true, message: "Fee details updated successfully" };
     } catch (error) {
         console.error("Error updating student fees:", error);
+        return { success: false, message: error.message };
+    }
+}
+*/
+
+
+const FEE_FIELDS = [
+    "admissionFees", "eligibilityFee", "isEligibilityApplicable", "collegeFees",
+    "examFees", "labFees", "coachingFee", "isEapcetCoachingApplicable",
+    "isNeetCoachingApplicable", "studyMaterialFees", "uniformFees", "discount"
+];
+
+export function saveStudentFees(feeData, isUpdate = false) {
+    try {
+        const fieldPlaceholders = FEE_FIELDS.map(() => "?").join(", ");
+        const fieldAssignments = FEE_FIELDS.map(field => `${field} = ?`).join(", ");
+
+        let stmt, values;
+
+        if (isUpdate) {
+            stmt = db.prepare(`
+                UPDATE fees SET ${fieldAssignments} WHERE studentId = ?
+            `);
+            values = [...FEE_FIELDS.map(f => feeData[f]), feeData.studentId];
+        } else {
+            stmt = db.prepare(`
+                INSERT INTO fees (
+                    studentId, ${FEE_FIELDS.join(", ")}
+                ) VALUES (
+                    ?, ${fieldPlaceholders}
+                )
+            `);
+            values = [feeData.studentId, ...FEE_FIELDS.map(f => feeData[f])];
+        }
+
+        stmt.run(...values);
+
+        return {
+            success: true,
+            message: `Fee details ${isUpdate ? "updated" : "added"} successfully`
+        };
+    } catch (error) {
+        console.error(`Error ${isUpdate ? "updating" : "adding"} student fees:`, error);
         return { success: false, message: error.message };
     }
 }

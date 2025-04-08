@@ -1,9 +1,13 @@
 // students/studentsData.js
-import { elements } from '../utils/sharedElements.js';
-import { capitalizeFirstLetter, normalizeString, studentsPerPage, setTotalStudents, setTotalPages } from '../utils/uiUtils.js';
+import { elements, initializeElements } from '../utils/sharedElements.js';
+import { capitalizeFirstLetter, normalizeString, toggleVisibility  } from '../utils/uiUtils.js';
 import { renderStudentList } from './studentsUI.js';
+import { initPagination, ensurePaginationContainer } from '../utils/paginationUtils.js'; // Import the setter function
+
 
 let students = [];
+const studentsPerPage = 4; // Or whatever number you want per page
+
 
 export function createOptions(options) {
     return options.map((option) => ({
@@ -165,9 +169,7 @@ export async function fetchStudentsFromDatabase() {
         const result = await window.electron.invoke('fetchStudents');
 
         if (result && Array.isArray(result)) {
-            setTotalStudents(result.length);
             
-            // ✅ Instead of `students = result`, update the existing array
             students.length = 0;  // Clear the existing array
             students.push(...result);  // Push new values into the same array
             
@@ -175,22 +177,13 @@ export async function fetchStudentsFromDatabase() {
             return students;
         } else {
             console.warn("⚠️ No students found in DB.");
-            setTotalStudents(0);
             students.length = 0;  // Clear the array instead of reassigning
             return [];
         }
     } catch (error) {
         console.error('❌ Error fetching students from local disk:', error);
-        setTotalStudents(0);
         students.length = 0;  // Clear the array instead of reassigning
         return [];
-    }
-}
-export async function initializeApp() {
-    try {
-        await fetchStudentsFromDatabase(); 
-    } catch (error) {
-        console.error("Error initializing app:", error);
     }
 }
 
@@ -210,46 +203,67 @@ export function getSelectedValues(checkboxes) {
 }
 
 export async function filterAndRenderStudents(page = 1, limit = studentsPerPage) {
-    if (!elements || !elements.studentListContainer) {
+    initializeElements();
+
+    if (!elements?.studentListContainer) {
         console.error("Elements not initialized before calling filterAndRenderStudents");
         return;
     }
+
     if (typeof page !== "number") {
         console.warn("Received event instead of page number. Fixing...");
-        console.trace();
         page = 1;
     }
 
-    page = Number(page) || 1; // Ensure page is a valid number
-    if (!students || students.length === 0) { 
-        students = await fetchStudentsFromDatabase(); 
+    page = Number(page) || 1;
+
+    if (!students || students.length === 0) {
+        students = await fetchStudentsFromDatabase();
     }
 
     const filters = {
         classYear: getSelectedValues([elements.firstYearCheckbox, elements.secondYearCheckbox]) || [],
-        groupName: getSelectedValues([elements.mpcCheckbox, elements.bipcCheckbox, elements.mecCheckbox, elements.cecCheckbox]) || [],
+        groupName: getSelectedValues([
+            elements.mpcCheckbox,
+            elements.bipcCheckbox,
+            elements.mecCheckbox,
+            elements.cecCheckbox,
+        ]) || [],
     };
-    
 
-    let filteredStudents = students.filter(student => {
-
+    const filteredStudents = students.filter((student) => {
         return (
             (filters.classYear.length === 0 || filters.classYear.includes(normalizeString(student.classYear))) &&
             (filters.groupName.length === 0 || filters.groupName.includes(normalizeString(student.groupName)))
         );
     });
-    
-    setTotalStudents(filteredStudents.length);
-    setTotalPages(Math.ceil(filteredStudents.length / limit));
 
-    const validPage = isNaN(page) ? 1 : Math.max(1, page);
+    const total = filteredStudents.length;
     const validLimit = isNaN(limit) ? studentsPerPage : limit;
+    const validPage = isNaN(page) ? 1 : Math.max(1, page);
     const offset = (validPage - 1) * validLimit;
     const paginatedStudents = filteredStudents.slice(offset, offset + validLimit);
-   
+
     if (paginatedStudents.length === 0) {
         elements.studentListContainer.innerHTML = '<p>No students found.</p>';
     } else {
         renderStudentList(paginatedStudents);
     }
+    ensurePaginationContainer(elements.studentListContainer);
+
+if (total > validLimit) {
+    console.log("Container before:", elements.paginationContainer);
+    initPagination({
+        totalItems: total,
+        itemsPerPage: validLimit,
+        currentPage: validPage,
+        onPageChange: (newPage) => filterAndRenderStudents(newPage),
+        container: elements.paginationContainer,
+    });
+    console.log("After initPagination, buttons:", document.querySelectorAll(".pagination-container button"));
+    toggleVisibility({ show: elements.paginationContainer });
+} else {
+    toggleVisibility({ hide: elements.paginationContainer });
 }
+}
+

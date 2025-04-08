@@ -1,6 +1,6 @@
 import { elements, initializeElements } from './sharedElements.js';
-import { filterAndRenderStudents } from '../students/studentsData.js';
 import { showStudentsTab, showAddStudent} from '../students/studentsUI.js';
+import { filterAndRenderStudents} from '../students/studentsData.js';
 
 
 export function attachEventListeners(context, studentTabManager = null) {

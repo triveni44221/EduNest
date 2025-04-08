@@ -1,13 +1,14 @@
 import { fetchStudentsFromDatabase } from './studentsData.js';
 import TabManager, { createTabButton, createTabContent } from '../utils/tabManager.js';
 import { initializeEventListeners } from '../utils/eventUtils.js';
-import { renderStudentForm , showEditStudent } from './studentsForm.js';
-import { toggleVisibility, sortData, normalizeString, capitalizeFirstLetter, renderPaginationControls} from '../utils/uiUtils.js';
+import { renderStudentForm, showEditStudent } from './studentsForm.js';
+import { toggleVisibility, sortData, normalizeString, capitalizeFirstLetter} from '../utils/uiUtils.js';
 import { elements, initializeElements } from '../utils/sharedElements.js';
 import { formatStudentData } from '../utils//dataUtils.js';
 import { deleteSelectedStudents } from './studentsEvents.js' ;
+import { loadFeeDetailsContent, showEditFeeForm } from "../fees/fees.js";
 import { studentTabManager } from './students.js';
-import { loadFeeDetailsContent , showEditFeeForm} from "../fees/fees.js";
+
 
 
 export let students = [];
@@ -138,20 +139,6 @@ function formatOrdinalClassYear(year) {
 }
 
 
-export function handleEditButtonClick(event) {
-    const targetElement = event.target.dataset.element;
-    const studentId = event.target.dataset.studentId;
-    const student = students.find(student => student.studentId === parseInt(studentId, 10));
-
-    if (targetElement === "editStudentButton" && student) {
-        console.log("Calling showEditStudent with:", studentTabManager);
-        showEditStudent(studentTabManager, student);
-    } else if (targetElement === "editFeeButton" && student) {
-        console.log("Edit Fee Button Clicked for student ID:", studentId);
-        showEditFeeForm(student);
-    }
-}
-
 let sortedStudents = [];
 
 export function renderStudentList(students) {
@@ -217,11 +204,8 @@ if (selectAllCheckbox) {
 } else {
     console.error("Select all checkbox not found in the table.");
 }
-    attachRowClickEvents();
-    renderPaginationControls();
-
-}
-
+        attachRowClickEvents();
+        }
 export function attachRowClickEvents() {
     const rows = document.querySelectorAll('.student-row');
 
@@ -236,6 +220,23 @@ export function attachRowClickEvents() {
     });
     elements.studentDataContainer.addEventListener("click", handleEditButtonClick); //Add event listener here
 }
+
+export function handleEditButtonClick(event) {
+    const { element: targetElement, studentId } = event.target.dataset;
+    if (!studentId) return;
+
+    const student = students.find(s => s.studentId === parseInt(studentId, 10));
+    if (!student) return;
+
+    if (targetElement === "editStudentButton") {
+        console.log("Calling showEditStudent with:", studentTabManager);
+        showEditStudent(studentTabManager, student);
+    } else if (targetElement === "editFeeButton") {
+        console.log("Edit Fee Button Clicked for student ID:", studentId);
+        showEditFeeForm(student);
+    }
+}
+
 
 export function displayStudentData(studentId) {
     const student = students.find(student => String(student.studentId) === String(studentId));
@@ -338,7 +339,7 @@ export function renderStudentSections(formattedData, photoHtml) {
         "Admission Details": ["studentId", "studentName", "admissionNumber", "dateOfAdmission", "classYear", "groupName", "medium", "secondLanguage", "batchYear"],
         "Academic Details": ["qualifyingExam", "gpa", "yearOfExam", "hallTicketNumber"],
         "Personal Details": ["dob", "nationality", "religion", "community", "motherTongue", "additionalCell", "scholarship", "parentsIncome", "physicallyHandicapped", "aadhaar", "identificationMark1", "identificationMark2"],
-        "Parent Details": ["fathersName", "mothersName", "fatherCell", "motherCell", "fatherOccupation", "motherOccupation"],
+        "Parents' Details": ["fathersName", "mothersName", "fatherCell", "motherCell", "fatherOccupation", "motherOccupation"],
         "Address Details": ["hno", "perm_hno", "street", "perm_street", "village", "perm_village", "mandal", "perm_mandal", "district", "perm_district", "state", "perm_state", "pincode", "perm_pincode"],
     };
 
@@ -559,3 +560,6 @@ const jpegPhotoPath = `http://localhost:3000/student-data/${fullYear}/${student.
         displayStudentPhoto(studentData, photoDiv);
         return photoDiv;
     }
+
+
+   

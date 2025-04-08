@@ -5,7 +5,7 @@ import fs from 'fs/promises';
 import bcrypt from 'bcrypt';
 import dotenv from 'dotenv';
 import Store from 'electron-store';
-import { addStudent, fetchStudents, updateStudent, deleteStudents, addStudentFees, updateStudentFees  } from './database/database.js';
+import { addStudent, fetchStudents, updateStudent, deleteStudents, saveStudentFees } from './database/database.js';
 import { getStudentFees, getStudentById } from './database/database.js'; // Import function
 
 dotenv.config();
@@ -97,7 +97,7 @@ ipcMain.handle('updateStudent', async (event, updatedStudent) => updateStudent(u
 
 ipcMain.handle('deleteStudents', async (event, studentIds) => deleteStudents(studentIds));
 
-ipcMain.handle('addStudentFees', async (event, feeData) => addStudentFees(feeData));
+ipcMain.handle('addStudentFees', async (event, feeData) => saveStudentFees(feeData));
 
 ipcMain.handle('getStudentFees', async (event, { studentId }) => {
     return getStudentFees(studentId);
@@ -115,8 +115,7 @@ ipcMain.handle('getStudentById', async (event, studentId) => {
     }
 });
 
-
-ipcMain.handle('updateStudentFees', async (event, feeData) => updateStudentFees(feeData));
+ipcMain.handle('updateStudentFees', async (event, feeData) => saveStudentFees(feeData, true));
 
 
 ipcMain.handle('login', async (event, { username, password }) => {

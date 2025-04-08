@@ -1,15 +1,15 @@
 import { initializeElements } from '../utils/sharedElements.js';
 import { initializeEventListeners } from '../utils/eventUtils.js';
-import  TabManager  from '../utils/tabManager.js';
-import { initializeApp } from './studentsData.js';
-import { showStudentsTab} from './studentsUI.js';
+import TabManager from '../utils/tabManager.js';
+import { filterAndRenderStudents } from './studentsData.js';
+import { showStudentsTab } from './studentsUI.js';
 
-let isInitialized = false; 
 
 export let studentTabManager;
 
 export async function initializeStudentsPage() {
-        initializeElements(); 
+    // Ensure elements are ready
+    initializeElements();
 
     const tabButtons = [
         document.querySelector('[data-element="allStudentsTabButton"]'),
@@ -21,16 +21,12 @@ export async function initializeStudentsPage() {
     ];
 
     studentTabManager = new TabManager(tabButtons, tabContents);
-
     initializeEventListeners(studentTabManager);
-
-    isInitialized = true;
     showStudentsTab(studentTabManager);
 
+    // Render student list and pagination now that DOM is ready
+    filterAndRenderStudents();
 }
- 
-(async function initialize() {
-    await initializeApp();
-})();
 
+// Register initializer for when tab is activated
 window.registerTabInitializer?.('students', initializeStudentsPage);

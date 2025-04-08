@@ -26,3 +26,34 @@
     gap: 50px;
     margin-top: 20px;
 }
+
+.pagination-container {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.pagination-container button {
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+}
+
+.pagination-container button[disabled] {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.pagination-container .ellipsis {
+    padding: 4px 8px;
+    color: #888;
+    user-select: none;
+}
+
+.pagination-container button.active {
+    background-color: #ee6969 !important;
+    color: #fff;
+    font-weight: bold;
+}
+
