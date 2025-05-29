@@ -1,13 +1,14 @@
 // students/studentsData.js
-import { elements, initializeElements } from '../utils/sharedElements.js';
-import { capitalizeFirstLetter, normalizeString, toggleVisibility  } from '../utils/uiUtils.js';
+import { elements, initializeElements, updateElements } from '../utils/sharedElements.js';
+import { toggleVisibility  } from '../utils/uiUtils.js';
+import { capitalizeFirstLetter, normalizeString } from '../utils/dataUtils.js';
 import { renderStudentList } from './studentsUI.js';
-import { initPagination, ensurePaginationContainer } from '../utils/paginationUtils.js'; // Import the setter function
+import { initPagination, ensurePaginationContainer } from '../utils/paginationUtils.js'; 
+import { getClassFilters } from '../utils/filters.js';
 
+export let students = [];
 
-let students = [];
-const studentsPerPage = 4; // Or whatever number you want per page
-
+const studentsPerPage = 10; 
 
 export function createOptions(options) {
     return options.map((option) => ({
@@ -162,108 +163,98 @@ export function gatherStudentData(perm_same) {
 
     return studentData;
 }
-export async function fetchStudentsFromDatabase() {
-    console.log("Fetching updated students...");
+
+
+export async function fetchStudentById(studentId) {
+    try {
+        const result = await window.electron.invoke('getStudentById', studentId);
+        return result;
+    } catch (err) {
+        console.error("Error fetching student by ID:", err);
+        return null;
+    }
+}
+
+export function getActiveFilters() {
+    const activeTabContent = document.querySelector('.tab-content:not(.hidden)');
+    if (!activeTabContent) return {};
+
+    const filtersContainer = activeTabContent.querySelector('.filters-container');
+    if (!filtersContainer) return {};
+
+    // Handle filters for students tab (basic filters) or fees tab (fee filters)
+    if (filtersContainer.querySelector('[data-filter="fee"]')) {
+        return getFeeFilters(filtersContainer);
+    } else {
+        return getClassFilters(filtersContainer);
+    }
+}
+
+export async function fetchStudentsFromDatabase(page = 1, limit = studentsPerPage, filters = {}) {
+    const offset = (page - 1) * limit;
 
     try {
-        const result = await window.electron.invoke('fetchStudents');
+        const response = await window.electron.invoke('fetchStudents', { limit, offset, filters });
 
-        if (result && Array.isArray(result)) {
-            
-            students.length = 0;  // Clear the existing array
-            students.push(...result);  // Push new values into the same array
-            
-            console.log("✅ Updated students:", students);
-            return students;
+        if (response.success) {
+            const result = response.data;
+            if (Array.isArray(result)) {
+                students.length = 0;
+                students.push(...result);
+                return students;
+            } else {
+                console.warn("⚠️ No students found in DB.");
+                students.length = 0;
+                return [];
+            }
         } else {
-            console.warn("⚠️ No students found in DB.");
-            students.length = 0;  // Clear the array instead of reassigning
+            console.error(`❌ IPC fetchStudents failed: ${response.message}`);
+            students.length = 0;
             return [];
         }
     } catch (error) {
         console.error('❌ Error fetching students from local disk:', error);
-        students.length = 0;  // Clear the array instead of reassigning
+        students.length = 0;
         return [];
     }
 }
 
-export function getSelectedValues(checkboxes) {
-    if (!Array.isArray(checkboxes)) {
-        checkboxes = [checkboxes]; // Convert single element to array
-    }
-
-    const selectedValues = checkboxes
-        .filter((checkbox) => {
-            return checkbox?.checked;
-        })
-        .map((checkbox) => {
-            return normalizeString(checkbox.value);
-        });
-    return selectedValues;
-}
-
-export async function filterAndRenderStudents(page = 1, limit = studentsPerPage) {
-    initializeElements();
-
+export async function filterAndRenderStudents({ page = 1, limit = studentsPerPage } = {}) {
     if (!elements?.studentListContainer) {
         console.error("Elements not initialized before calling filterAndRenderStudents");
         return;
     }
 
-    if (typeof page !== "number") {
-        console.warn("Received event instead of page number. Fixing...");
-        page = 1;
-    }
-
-    page = Number(page) || 1;
-
-    if (!students || students.length === 0) {
-        students = await fetchStudentsFromDatabase();
-    }
-
-    const filters = {
-        classYear: getSelectedValues([elements.firstYearCheckbox, elements.secondYearCheckbox]) || [],
-        groupName: getSelectedValues([
-            elements.mpcCheckbox,
-            elements.bipcCheckbox,
-            elements.mecCheckbox,
-            elements.cecCheckbox,
-        ]) || [],
-    };
-
-    const filteredStudents = students.filter((student) => {
-        return (
-            (filters.classYear.length === 0 || filters.classYear.includes(normalizeString(student.classYear))) &&
-            (filters.groupName.length === 0 || filters.groupName.includes(normalizeString(student.groupName)))
-        );
-    });
-
-    const total = filteredStudents.length;
+    const filters = getActiveFilters();
+    const validPage = Number(page) || 1;
     const validLimit = isNaN(limit) ? studentsPerPage : limit;
-    const validPage = isNaN(page) ? 1 : Math.max(1, page);
-    const offset = (validPage - 1) * validLimit;
-    const paginatedStudents = filteredStudents.slice(offset, offset + validLimit);
 
-    if (paginatedStudents.length === 0) {
-        elements.studentListContainer.innerHTML = '<p>No students found.</p>';
-    } else {
-        renderStudentList(paginatedStudents);
+    try {
+        students = await fetchStudentsFromDatabase(validPage, validLimit, filters);
+        const total = await window.electron.invoke('getFilteredStudentCount', filters);
+
+        renderStudentList(students);
+
+        ensurePaginationContainer(elements.studentListContainer);
+        updateElements();
+
+        if (students.length > 0 && total > validLimit) {
+            initPagination({
+                totalItems: total,
+                itemsPerPage: validLimit,
+                currentPage: validPage,
+                onPageChange: (newPage) => filterAndRenderStudents({ page: newPage, limit: validLimit }),
+                container: elements.paginationContainer,
+            });
+
+            toggleVisibility({
+                show: [elements.paginationContainer],
+                hide: [elements.addStudentFormContainer],
+            });
+        } else {
+            toggleVisibility({ hide: elements.paginationContainer });
+        }
+    } catch (error) {
+        console.error("Error fetching and rendering students:", error);
     }
-    ensurePaginationContainer(elements.studentListContainer);
-
-if (total > validLimit) {
-    console.log("Container before:", elements.paginationContainer);
-    initPagination({
-        totalItems: total,
-        itemsPerPage: validLimit,
-        currentPage: validPage,
-        onPageChange: (newPage) => filterAndRenderStudents(newPage),
-        container: elements.paginationContainer,
-    });
-    console.log("After initPagination, buttons:", document.querySelectorAll(".pagination-container button"));
-    toggleVisibility({ show: elements.paginationContainer });
-} else {
-    toggleVisibility({ hide: elements.paginationContainer });
 }
-}
-

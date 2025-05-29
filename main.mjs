@@ -6,7 +6,7 @@ import bcrypt from 'bcrypt';
 import dotenv from 'dotenv';
 import Store from 'electron-store';
 import { addStudent, fetchStudents, updateStudent, deleteStudents, saveStudentFees } from './database/database.js';
-import { getStudentFees, getStudentById } from './database/database.js'; // Import function
+import { getStudentFees, getStudentById, getFilteredStudentCount } from './database/database.js'; // Import function
 
 dotenv.config();
 const store = new Store();
@@ -88,10 +88,27 @@ function createMainWindow(role) {
 
 ipcMain.handle('addStudent', async (event, studentData) => addStudent(studentData));
 
-ipcMain.handle('fetchStudents', async () => {
-    const students = fetchStudents();
-    return students;
+ipcMain.handle('fetchStudents', async (event, { limit = 30, offset = 0, filters = {} } = {}) => {
+    try {
+        const result = await fetchStudents(limit, offset, filters);
+        return { success: true, data: result };
+    } catch (error) {
+        console.error("Error in IPC fetchStudents:", error);
+        return { success: false, message: error.message };
+    }
 });
+
+
+ipcMain.handle('getFilteredStudentCount', async (event, filters) => {
+    try {
+        const count = await getFilteredStudentCount(filters);
+        return count;
+    } catch (error) {
+        console.error('❌ Error getting filtered student count:', error);
+        return 0;
+    }
+});
+
 
 ipcMain.handle('updateStudent', async (event, updatedStudent) => updateStudent(updatedStudent));
 

@@ -1,5 +1,6 @@
 import { getElementsByDataAttribute } from "./uiUtils.js";
 
+
 export let elements = {};
 
 export function initializeElements() {
@@ -9,15 +10,24 @@ export function initializeElements() {
         console.warn("⚠️ Warning: No elements found with 'data-element' attributes.");
     }
 
-    // Ensure these elements exist in the DOM:
-const requiredElements = [
-    "basicDetailsTab", "feeTab", "academicsTab", "attendanceTab", "certificatesTab",
-    "basicDetailsTabContent", "feeTabContent", "academicsTabContent", "attendanceTabContent", "certificatesTabContent"
-];
-requiredElements.forEach(id => {
-    if (!elements[id]) {
-        console.warn(`⚠️ Warning: Missing element '${id}' in sharedElements.js`);
-    }
-});
+    const requiredElements = [
+        "basicDetailsTab", "feeTab", "academicsTab", "attendanceTab", "certificatesTab",
+        "basicDetailsTabContent", "feeTabContent", "academicsTabContent", "attendanceTabContent", "certificatesTabContent"
+    ];
+    requiredElements.forEach(id => {
+        if (!elements[id]) {
+            console.warn(`⚠️ Warning: Missing element '${id}' in sharedElements.js`);
+        }
+    });
+}
 
+export function updateElements() {
+    const newElements = getElementsByDataAttribute("data-element");
+
+    Object.entries(newElements).forEach(([key, el]) => {
+        if (!elements[key] || elements[key] !== el) {
+            elements[key] = el;
+        }
+    });
+    
 }

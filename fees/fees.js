@@ -1,8 +1,12 @@
 import { createField , createFieldset, showEditEntity} from '../students/studentsForm.js';
-import { YES_NO_OPTIONS } from "../students/studentsData.js";
-import { loadStudentSection , students} from "../students/studentsUI.js";
+import { YES_NO_OPTIONS, students } from "../students/studentsData.js";
+import { loadStudentSection} from "../students/studentsUI.js";
 import { elements, initializeElements } from '../utils/sharedElements.js';
-import { createSubmitButton, normalizeBooleans} from "../utils/uiUtils.js"; 
+import { createSubmitButton} from "../utils/formUtils.js"; 
+import { normalizeBooleans } from '../utils/dataUtils.js';
+
+import { studentTabManager } from '../students/students.js';
+
 
 function createYesNoDropdown(label, selectId, fieldToToggle) {
     const dropdownDiv = document.createElement('div');
@@ -275,10 +279,6 @@ export async function handleFeeFormSubmit(event) {
     
     const feeData = gatherFeeData();
 
-    const payload = { studentId: studentId, ...feeData };
-
-    console.log("📝 Fee form submission payload:", payload);
-
     let feeResult;
 
 
@@ -400,34 +400,15 @@ export async function fetchFeeDetailsFromDatabase(studentId) {
         return {}; 
     }
 }
-/*
-export async function showEditFeeForm(student) {
 
-    const contentContainer = document.getElementById('feeTabContent');
-    if (!contentContainer) return;
+export function showEditFeeForm(student, studentTabManager) {
 
-    contentContainer.innerHTML = `<p>Loading fee edit form...</p>`;
-
-    try {
-        const feeDetails = await fetchFeeDetailsFromDatabase(student.studentId);
-
-        const studentWithFees = { ...student, ...feeDetails };
-
-        await renderFeeFields(contentContainer, true, studentWithFees);
-
-
-    } catch (error) {
-        console.error("Error loading fee details for edit:", error);
-        contentContainer.innerHTML = `<p>Error loading fee edit form.</p>`;
-    }
-}*/
-
-export function showEditFeeForm(student) {
     showEditEntity({
         entityType: 'fee',
         containerElement: document.getElementById('feeTabContent'),
         fetchDetailsCallback: fetchFeeDetailsFromDatabase,
         renderCallback: renderFeeFields,
+        formSelector: '[data-element="editFeeForm"]',
         data: student,
     });
 }

@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,41 +11,37 @@
             <div class="students-header white-background">
                 <div class="tabs">
                     <button data-element="allStudentsTabButton" class="tab-button">All Students</button>
-                    <button data-element="addStudentTabButton" class="tab-button">Add Students</button>
+                    <button data-element="pastStudentsTabButton" class="tab-button">Past Students</button>
+                    <button data-element="dropOutsTabButton" class="tab-button">Drop Outs</button>
+                    <button data-element="deletedStudentsTabButton" class="tab-button">Deleted Students</button>
+
                 </div>
             </div>
             <!-- All Students Tab content -->
         <div class="tab-content" data-element="allStudentsTab">
             <!-- Detailed student info will appear here when a row is clicked -->
             <div data-element="studentDataContainer" class="student-data-container"></div> 
-            <div data-element="filtersContainer" class="filters-container">
-                <div class="checkbox-container">
-                    <div class="year-checkbox-container">
-                        <input type="checkbox" data-element="firstYearCheckbox" value="first"> <label for="firstYearCheckbox">First Year</label>
-                        <input type="checkbox" data-element="secondYearCheckbox" value="second"> <label for="secondYearCheckbox">Second Year</label>
-                    </div>
-                
-                    <div class="separator"></div>
-                
-                    <div class="groupName-checkbox-container">
-                        <input type="checkbox" data-element="mpcCheckbox" value="mpc"> <label for="mpcCheckbox">MPC</label>
-                        <input type="checkbox" data-element="bipcCheckbox" value="bipc"> <label for="bipcCheckbox">BiPC</label>
-                        <input type="checkbox" data-element="mecCheckbox" value="mec"> <label for="mecCheckbox">MEC</label>
-                        <input type="checkbox" data-element="cecCheckbox" value="cec"> <label for="cecCheckbox">CEC</label>
-                    </div>
-                </div>
-                
-            </div>
-            <!-- Student list with clickable rows -->
-            <div class="student-list" data-element="studentListContainer"></div>
-            <!-- Dynamically generated student list goes here -->
+            <div data-element="controlsContainer" class="top-controls"></div>
+
+            <!-- Add Student Form (separate box, not wrapping anything) -->
+                <div class="student-form" data-element="addStudentFormContainer"></div>
+
+                <!-- Student List (separate sibling) -->
+                <div class="student-list" data-element="studentListContainer"></div>
         </div>
 
-        <div class="tab-content" data-element="addStudentTab">
+        <div class="tab-content" data-element="pastStudentsTab">
             <!-- Content for Add Student Tab -->
-            <div class="student-form" data-element="addStudentFormContainer">
                 <!-- Add student form content will go here -->
             </div>
+            <div class="tab-content" data-element="dropOutsTab">
+                <!-- Drop Outs Tab content -->
+            </div>
+            
+            <div class="tab-content" data-element="deletedStudentsTab">
+                <!-- Deleted Students Tab content -->
+            </div>
+            
         </div>
     </div>
 </body>

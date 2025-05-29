@@ -14,7 +14,7 @@ const db = new Database(dbPath, { verbose: console.log });
 /** TABLE DEFINITIONS **/
 const CREATE_STUDENTS_TABLE = `
     CREATE TABLE IF NOT EXISTS students (
-    studentId INTEGER PRIMARY KEY, -- ❌ Removed AUTOINCREMENT
+    studentId INTEGER PRIMARY KEY,
     studentName TEXT NOT NULL,
     gender TEXT NOT NULL,
     admissionNumber INTEGER DEFAULT NULL,  
@@ -61,7 +61,8 @@ const CREATE_STUDENTS_TABLE = `
     qualifyingExam TEXT NOT NULL,
     yearOfExam INTEGER NOT NULL, 
     hallTicketNumber TEXT NOT NULL,
-    gpa REAL DEFAULT NULL
+    gpa REAL DEFAULT NULL,
+    deleted INTEGER DEFAULT 0
 );
 `;
 
@@ -93,13 +94,10 @@ const CREATE_FEES_TABLE = `
     ); 
 `;  
 
-// Create tables
 db.exec(CREATE_STUDENTS_TABLE);
 db.exec(CREATE_USERS_TABLE);
 db.exec(CREATE_FEES_TABLE);
 
-
-/** REUSABLE ASYNC QUERY EXECUTION FUNCTION **/
 function executeQuery(query, params = []) {
     return new Promise((resolve, reject) => {
         try {
@@ -123,8 +121,6 @@ function executeQuery(query, params = []) {
     });
 }
 
-/** STUDENT MANAGEMENT FUNCTIONS **/
-
 export function addStudent(studentData) {
     try {
         const admissionYear = new Date(studentData.dateOfAdmission).getFullYear(); // Get full year
@@ -132,22 +128,21 @@ export function addStudent(studentData) {
         const prefix = (admissionYear % 100) * 1000;
 
 
-        // Find all used student IDs in the current year's range
         const usedIds = db.prepare(`
             SELECT studentId FROM students 
-            WHERE studentId BETWEEN ? AND ? 
+            WHERE studentId BETWEEN ? AND ?
             ORDER BY studentId ASC
         `).all(prefix + 1, prefix + 999).map(row => row.studentId);
-
-        // Find the first missing student ID
+        
+        // Find the first missing student ID in the range
         let nextStudentId = null;
         for (let i = prefix + 1; i <= prefix + 999; i++) {
-            if (!usedIds.includes(i)) {  // If there's a gap, use it
-                nextStudentId = parseInt(i, 10);
+            if (!usedIds.includes(i)) {
+                nextStudentId = i;
                 break;
             }
         }
-
+        
         if (!nextStudentId) {
             throw new Error("No available student IDs in this range. Increase range or check for database errors.");
         }
@@ -192,54 +187,6 @@ export function addStudent(studentData) {
         return { success: false, message: error.message };
     }
 }
-
-/*
-export function addStudentFees(feeData) {
-    try {
-        const stmt = db.prepare(`
-            INSERT INTO fees (
-                studentId, admissionFees, eligibilityFee, isEligibilityApplicable, collegeFees, examFees, labFees, coachingFee, isEapcetCoachingApplicable, isNeetCoachingApplicable, studyMaterialFees, uniformFees, discount
-            ) VALUES (
-                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
-            )
-        `);
-
-        const result = stmt.run(
-            feeData.studentId, feeData.admissionFees, feeData.eligibilityFee, feeData.isEligibilityApplicable, feeData.collegeFees,
-            feeData.examFees, feeData.labFees, feeData.coachingFee, feeData.isEapcetCoachingApplicable, feeData.isNeetCoachingApplicable, feeData.studyMaterialFees, feeData.uniformFees, feeData.discount
-        );
-        console.log("✅ Fee details saved successfully for studentId:", feeData.studentId);
-
-        return { success: true, message: "Fee details added successfully" };
-    } catch (error) {
-        console.error("Error adding student fees:", error);
-        return { success: false, message: error.message };
-    }
-}
-
-export function updateStudentFees(feeData) {
-    try {
-        const stmt = db.prepare(`
-            UPDATE fees SET
-                admissionFees = ?, eligibilityFee = ?, collegeFees = ?, isEligibilityApplicable = ?, examFees = ?, 
-                labFees = ?, coachingFee = ?, isEapcetCoachingApplicable = ?, isNeetCoachingApplicable = ?, studyMaterialFees = ?, uniformFees = ?, discount = ?
-            WHERE studentId = ?
-        `);
-
-        const result = stmt.run(
-            feeData.admissionFees, feeData.eligibilityFee, feeData.collegeFees, feeData.isEligibilityApplicable, feeData.examFees,
-            feeData.labFees, feeData.coachingFee,feeData.isEapcetCoachingApplicable, feeData.isNeetCoachingApplicable, feeData.studyMaterialFees, feeData.uniformFees,feeData.discount,
-            feeData.studentId
-        );
-
-        return { success: true, message: "Fee details updated successfully" };
-    } catch (error) {
-        console.error("Error updating student fees:", error);
-        return { success: false, message: error.message };
-    }
-}
-*/
-
 
 const FEE_FIELDS = [
     "admissionFees", "eligibilityFee", "isEligibilityApplicable", "collegeFees",
@@ -312,13 +259,37 @@ export async function getStudentById(studentId) {
     }
 }
 
-export function fetchStudents(limit = 30, offset = 0) {
-    limit = parseInt(limit, 10);
-    offset = parseInt(offset, 10);
+export function fetchStudents(limit = 30, offset = 0, filters = {}) {
+    const { sql, params } = buildFilterSQL(filters, false);
+    const query = `SELECT * FROM students${sql} LIMIT ? OFFSET ?`;
+    return executeQuery(query, [...params, limit, offset]);
+}
 
-    const query = `SELECT * FROM students LIMIT ? OFFSET ?`;
-    const result = executeQuery(query, [limit, offset]);
-    return result;
+export function getFilteredStudentCount(filters = {}) {
+    const { sql, params } = buildFilterSQL(filters, false);
+    const query = `SELECT COUNT(*) as total FROM students${sql}`;
+    const result = executeQuery(query, params);
+    return result[0]?.total || 0;
+}
+
+function buildFilterSQL(filters = {}, includeDeleted = false) {
+    const conditions = [`deleted = ${includeDeleted ? 1 : 0}`];
+    const params = [];
+
+    if (filters.classYear?.length) {
+        conditions.push(`classYear IN (${filters.classYear.map(() => '?').join(',')})`);
+        params.push(...filters.classYear);
+    }
+
+    if (filters.groupName?.length) {
+        conditions.push(`groupName IN (${filters.groupName.map(() => '?').join(',')})`);
+        params.push(...filters.groupName);
+    }
+
+// Add more filters here if needed
+
+    const sql = conditions.length ? ` WHERE ${conditions.join(' AND ')}` : '';
+    return { sql, params };
 }
 
 export function updateStudent(updatedData) {  // Take updatedData ONLY
@@ -342,19 +313,28 @@ export function updateStudent(updatedData) {  // Take updatedData ONLY
 
 export async function deleteStudents(studentIds) {
     if (!studentIds.length) return { success: false, message: "No student IDs provided" };
-
     const placeholders = studentIds.map(() => '?').join(', ');
-
     try {
-        // Delete related records first (adjust based on your related tables)
-        await executeQuery(`DELETE FROM fees WHERE studentId IN (${placeholders})`, studentIds);
-
-        // Now delete the students
-        const result = await executeQuery(`DELETE FROM students WHERE studentId IN (${placeholders})`, studentIds);
-
-        return { success: true, message: `${studentIds.length} student(s) deleted successfully.` };
+        const result = await executeQuery(
+            `UPDATE students SET deleted = 1 WHERE studentId IN (${placeholders})`,
+            studentIds
+        );
+        return { success: true, message: `${studentIds.length} student(s) marked as deleted.` };
     } catch (error) {
-        console.error("Error deleting students:", error);
-        return { success: false, message: "Failed to delete students." };
+        console.error("Error marking students as deleted:", error);
+        return { success: false, message: "Failed to mark students as deleted." };
     }
 }
+
+export function fetchDeletedStudents(limit = 30, offset = 0, filters = {}) {
+    const { sql, params } = buildFilterSQL(filters, true); // true for deleted
+    const query = `SELECT * FROM students${sql} LIMIT ? OFFSET ?`;
+    return executeQuery(query, [...params, limit, offset]);
+}
+
+export function fetchFilteredDeletedStudentCount(filters = {}) {
+    const { sql, params } = buildFilterSQL(filters, true); // true for deleted
+    const query = `SELECT COUNT(*) as total FROM students${sql}`;
+    return executeQuery(query, params).then(result => result[0]?.total || 0);
+}
+

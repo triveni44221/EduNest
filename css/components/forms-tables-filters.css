@@ -227,6 +227,18 @@ th.no-sort::before {
     gap: 20px;
 }
 
+.filters-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+    gap: 110px; /* Space between the two groups */
+
+}
+.filters-container.hidden {
+    display: none;
+}
+
+
 /* Year checkbox container (First Year, Second Year) */
 .year-checkbox-container {
     margin-top: 10px;
@@ -244,14 +256,6 @@ th.no-sort::before {
     gap: 20px; /* Space between checkboxes */
     align-items: center; /* Align checkboxes and text in the center */
     margin-left: 10px;
-}
-
-/* Container for both groups (year and group checkboxes) */
-.checkbox-container {
-    margin-top: 10px;
-    display: flex;
-    align-items: center;  /* Ensure items align in the middle */
-    gap: 110px; /* Space between the two groups */
 }
 
 /* Separator line between year and group checkboxes */
@@ -272,7 +276,7 @@ input[type="checkbox"] {
 }
 
 /* Increase specificity by including parent classes */
-.filters-container .checkbox-container label {
+.filters-container label {
     margin-top: 15px !important;
     font-size: 16px;
     font-weight: 500;

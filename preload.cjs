@@ -7,7 +7,9 @@
 
     // Define valid IPC channels
     const validChannels = Object.freeze({
-        invoke: Object.freeze(['fetchStudents','deleteStudents', 'editStudent', 'getStudentById','updateStudent', 'login', 'getCredentials', 'clearCredentials', 'storeCredentials', 'addStudent', 'addStudentFees', 'updateStudentFees','getStudentFees']),
+        invoke: Object.freeze(['fetchStudents','deleteStudents', 'editStudent', 'getStudentById','updateStudent', 
+            'login', 'getCredentials', 'clearCredentials', 'storeCredentials', 'addStudent', 'addStudentFees', 
+            'updateStudentFees','getStudentFees', 'getFilteredStudentCount']),
         send: Object.freeze(['updateStudent', 'logMessage', 'editStudent', 'storeCredentials', 'clearCredentials', 'loginSuccess', 'load-sidebar', 'addStudent']),
         receive: Object.freeze(['error', 'studentsUpdated', 'updateSuccess', 'updateFailed', 'dataReceived', 'statusUpdate', 'testResponse', 'loginSuccess', 'user-role'])
     });

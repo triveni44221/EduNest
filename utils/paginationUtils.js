@@ -1,5 +1,5 @@
 // paginationUtils.js
-import { elements } from "./sharedElements.js";
+import { elements, updateElements } from "./sharedElements.js";
 
 export function initPagination({ 
     container, 
@@ -9,16 +9,25 @@ export function initPagination({
     currentPage = 1 
 }) {
     if (!container || !container.parentNode) {
-        console.error("❌ Invalid container passed to initPagination.");
+        console.error("❌ Invalid container passed to initPagination.", {
+            container,
+            typeofContainer: typeof container,
+            containerIsNull: container === null,
+            containerIsUndefined: typeof container === 'undefined',
+            containerNodeType: container?.nodeType,
+            containerOuterHTML: container?.outerHTML || "(no outerHTML)",
+            containerParent: container?.parentNode
+        });
         return;
     }
+    
 
     const totalPages = Math.ceil(totalItems / itemsPerPage);
-    container.style.display = 'block';
     container.innerHTML = '';
 
-    function render() {
-        console.log("Rendering page", currentPage);
+    function render(pageToRender) {
+        currentPage = pageToRender; 
+        
         container.innerHTML = '';
 
         const maxVisiblePages = 7;
@@ -30,7 +39,6 @@ export function initPagination({
             btn.disabled = false;
             if (isActive) {
                 btn.classList.add("active");
-                console.log(`👉 Active class added to: ${label}`);
             }
             if (extraClass) btn.classList.add(extraClass);
             btn.addEventListener("click", callback);
@@ -44,15 +52,16 @@ export function initPagination({
             return span;
         };
 
-        const renderPageButton = (page) => {
-            const isActive = page === currentPage;
+        const renderPageButton = (pageNum) => {
+            const isActive = Number(pageNum) === Number(currentPage);
             container.appendChild(
-                createButton(page, isActive, () => {
-                    currentPage = page;
-                    onPageChange(page);
+                createButton(String(pageNum), isActive, () => {
+                    currentPage = pageNum;
+                    onPageChange(pageNum);
                 })
             );
         };
+        
 
         // « First
         if (currentPage > 1) {
@@ -125,13 +134,16 @@ export function initPagination({
 
     render(currentPage);
 }
-
 export function ensurePaginationContainer(afterElement) {
-    if (!elements.container) {
+    // Check if pagination container already exists
+    if (!elements.paginationContainer) {
         const container = document.createElement("div");
         container.className = "pagination-container";
-        container.setAttribute("data-element", "container");
+        container.setAttribute("data-element", "paginationContainer");
         afterElement.parentNode.insertBefore(container, afterElement.nextSibling);
-        elements.container = container;
+
+        updateElements();
+
+        elements.paginationContainer = container;
     }
 }

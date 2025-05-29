@@ -1,11 +1,12 @@
 // students/studentsForm.js
 import { YEAR_OPTIONS, GENDER_OPTIONS, GROUP_OPTIONS, MEDIUM_OPTIONS, SECOND_LANGUAGE_OPTIONS, NATIONALITY_OPTIONS, SCHOLARSHIP_OPTIONS, OCCUPATION_OPTIONS, PHYSICALLY_HANDICAPPED_OPTIONS, QUALIFYING_EXAM_OPTIONS, PARENTS_INCOME_OPTIONS, BATCH_YEAR_OPTIONS, COACHING_OPTIONS  } from "./studentsData.js";
 import { calculateDateYearsAgo } from "../utils/dataUtils.js";
-import { capitalizeFirstLetter, createSubmitButton} from "../utils/uiUtils.js"; 
-import { elements, initializeElements } from '../utils/sharedElements.js';
+import { createSubmitButton} from "../utils/formUtils.js"; 
+import { elements, initializeElements, updateElements } from '../utils/sharedElements.js';
 import { handleStudentFormSubmit } from './studentsEvents.js';
 import { createStudentPhotoSection } from './studentsUI.js';
-import { studentTabManager } from './students.js';
+import {  addCancelButton} from '../utils//formUtils.js';
+import { capitalizeFirstLetter } from '../utils/dataUtils.js';
 
 
 export function createFormField({ label, elementName, type = "text", options = [], required = false, pattern = "", minLength = "", maxLength = "", min = "", max = "", value = ""}) {
@@ -98,30 +99,10 @@ export function renderForm(container, formFields, fieldsetGroups, adjustedIndexe
     form.setAttribute('data-form-type', isEdit ? 'edit' : 'add');
     if (isEdit && studentId !== undefined) {
         form.dataset.studentId = studentId;
-    }
-    
+    }    
 
     container.innerHTML = '';
     form.innerHTML = '';
-
-    if (isEdit) {
-        const studentIdContainer = document.createElement('div');
-        studentIdContainer.classList.add('student-id-container');
-
-        const studentIdLabel = document.createElement('span');
-        studentIdLabel.textContent = 'Student ID:';
-        studentIdLabel.classList.add('student-id-label');
-
-        const studentIdValue = document.createElement('span');
-        studentIdValue.textContent = studentId || 'N/A';
-        studentIdValue.classList.add('student-id-value');
-
-        studentIdContainer.appendChild(studentIdLabel);
-        studentIdContainer.appendChild(studentIdValue);
-
-        container.prepend(studentIdContainer);
-
-    }
 
      Object.entries(fieldsetGroups).forEach(([groupName, rows], index) => {
         const start = index === 0 ? 0 : adjustedIndexes[index - 1];
@@ -151,6 +132,7 @@ export function renderStudentForm(container, isEdit = false, studentData = {}) {
         console.error("Form container not found!");
         return;
     }
+    console.log('renderStudentForm: container=', container);
 
     const studentFormContainer = document.createElement('div');
     studentFormContainer.id = 'studentFormContainer';
@@ -227,7 +209,7 @@ const fieldsetGroups = {
 const adjustedIndexes = [9, 21, 27, 34, 38, 46];
 
 const { form } = renderForm(studentFormContainer, formFields, fieldsetGroups, adjustedIndexes, isEdit, studentId, studentData, handleStudentFormSubmit);
-
+updateElements();
  // 1. Photo Section Logic
  if (fieldsetGroups['Admission Details']) {
     const admissionFieldset = form.querySelector('fieldset:nth-of-type(1)'); // Assuming Admission Details is the first fieldset
@@ -296,14 +278,14 @@ if (fieldsetGroups['Address Details']) {
             ]);
             permanentFieldsContainer.appendChild(permFieldset);
             permanentFieldsContainer.style.display = 'block';
-            initializeElements();
+            updateElements();
         });
     }
 }
 
 // 3. Nationality Select Logic
 function initializeFormValues() {
-    initializeElements();
+    updateElements();
     const nationalitySelect = elements.nationality;
 
     if (!nationalitySelect) {
@@ -326,11 +308,11 @@ function initializeFormValues() {
 
                 otherNationalityField.setAttribute('data-element', 'otherNationalityField');
                 nationalitySelect.parentNode.after(otherNationalityField);
-                initializeElements();
+                updateElements();
             }
         } else if (nationalityOtherField) {
             nationalityOtherField.remove();
-            initializeElements();
+            updateElements();
         }
     }
 
@@ -338,11 +320,25 @@ function initializeFormValues() {
     handleOtherNationalityField(nationalitySelect.value);
 }
 
-setTimeout(initializeFormValues, 0); 
+setTimeout(() => {
+    initializeFormValues();
+  }, 0);
+  initializeElements();
+
 
     return form;
     
 }
+
+export function displayFormErrors(errors) {
+    for (const field in errors) {
+        const errorElement = elements[`${field}Error`];
+        if (errorElement) {
+            errorElement.textContent = errors[field];
+        }
+    }
+}
+
 export async function showEditEntity({
     entityType,
     containerElement,
@@ -397,6 +393,22 @@ export async function showEditEntity({
 export function showEditStudent(studentTabManager, studentData) {
     showEditEntity({
         entityType: 'student',
+        containerElement: document.getElementById('basicDetailsTabContent'),
+        renderCallback: (container, isEdit, enrichedData) => {
+            renderStudentForm(container, isEdit, enrichedData);
+        },
+            afterRenderCallback: (enrichedData) => {
+        },
+        formDataKeyToRemove: "addStudentFormData",
+        formSelector: '[data-element="editStudentForm"]',
+        data: studentData,
+    });
+}
+
+/*
+export function showEditStudent(studentTabManager, studentData) {
+    showEditEntity({
+        entityType: 'student',
         containerElement: elements.addStudentFormContainer,
         switchTabCallback: () => studentTabManager?.switchTab(elements.addStudentTabButton),
         renderCallback: renderStudentForm,
@@ -406,52 +418,5 @@ export function showEditStudent(studentTabManager, studentData) {
         data: studentData,
     });
 }
+*/
 
-export function displayFormErrors(errors) {
-    for (const field in errors) {
-        const errorElement = elements[`${field}Error`];
-        if (errorElement) {
-            errorElement.textContent = errors[field];
-        }
-    }
-}
-
-
-/*
-export function showEditStudent(studentTabManager, studentData) {
-     if (!studentTabManager) {
-        console.error('❌ studentTabManager is not initialized.');
-        return;
-    }
-    if (typeof studentTabManager.switchTab !== "function") {
-        console.error('❌ studentTabManager does not have switchTab function.');
-        console.error('Received:', studentTabManager);
-        return;
-    }
-    studentTabManager.switchTab(elements.addStudentTabButton);
-     // Remove previous form if it exists
-     const existingForm = document.querySelector('[data-element="editStudentForm"]');
-     if (existingForm) {
-         existingForm.remove();
-     }
-
-     // Ensure container is empty before rendering new form
-    elements.addStudentFormContainer.innerHTML = "";
-
-
-    localStorage.removeItem("addStudentFormData");
-   
-    renderStudentForm(elements.addStudentFormContainer, true, studentData);
-    initializeElements();
-    setTimeout(() => {
-        const form = document.querySelector('[data-element="editStudentForm"]');
-
-        if (form) {
-            form.dataset.studentId = studentData.studentId;
-            form.removeEventListener('submit', handleStudentFormSubmit);
-            form.addEventListener('submit', handleStudentFormSubmit);
-        } else {
-            console.error("Edit student form not found.");
-        }
-    }, 0);
-}*/

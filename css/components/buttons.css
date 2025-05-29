@@ -15,34 +15,51 @@ button:hover {
     background-color: #0056b3;
 }
 
-.delete-button {
-    background-color: #c9c9c9; /* Background color */
-    color: rgb(12, 12, 12); /* Text color */
-    padding: 12px 25px; /* Comfortable padding */
-    font-size: 18px; /* Larger text for readability */
-    border: none; /* No border */
-    border-radius: 8px; /* Slightly rounded corners */
-    cursor: pointer; /* Pointer cursor on hover */
-    transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transitions */
-    max-width: 300px; /* Limit max width to keep it neat */
-    display: block; /* Ensure it's treated as a block element */
-    margin-left: auto;
+/* Controls Bar Buttons - Unified Style */
+.controls-button {
+    background-color: #e2e8f0; 
+    color: #0e141f; 
+    padding: 10px 24px;
+    font-size: 16px;
+    font-weight: 400;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-/* Hover effect */
-.delete-button:hover {
-    background-color: #d32f2f; /* Slightly darker red */
-    transform: scale(1.05); /* Slightly bigger when hovered */
+.controls-button:hover {
+    background-color: #a1cc7d; /* Tailwind Blue-600 */
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 }
 
-/* Focus style */
-.delete-button:focus {
-    outline: 3px solid #ff4081; /* Highlight with pink border */
-    outline-offset: 3px; /* Offset the focus ring */
+.controls-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4); /* Blue focus ring */
 }
 
-/* Active state when clicked */
-.delete-button:active {
-    background-color: #ce4c4c; /* Darker red when clicked */
-    transform: scale(0.98); /* Shrink slightly when clicked */
+.controls-button .button-icon {
+    margin-right: 10px;
+    font-size: 16px;
+    color: inherit;
+    transition: transform 0.2s ease;
+}
+
+.controls-button:hover .button-icon {
+    transform: scale(1.1);
+}
+
+.top-controls {
+    display: flex;
+    justify-content: flex-end;
+    gap: 16px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    padding: 3px 0;
+    background-color: #ffffff; 
+    padding: 8px 8px;
 }

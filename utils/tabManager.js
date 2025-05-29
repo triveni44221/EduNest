@@ -1,9 +1,11 @@
+import { updateElements } from './sharedElements.js';
+
 class TabManager {
     constructor(tabButtons, tabContents, defaultTab, contentLoaders = {}) {
         this.tabs = tabButtons.map((btn, index) => ({
             button: btn,
             content: tabContents[index],
-            loader: contentLoaders[btn.getAttribute("data-element")] || null, // Get loader function if exists
+            loader: contentLoaders[btn.getAttribute("data-element")] || null,
         }));
         this.activeTab = defaultTab || this.tabs[0];
         this.init();
@@ -20,19 +22,31 @@ class TabManager {
         this.tabs.forEach(({ button, content, loader }) => {
             const isActive = button === activeButton;
             button.classList.toggle('active', isActive);
+            content.classList.toggle('hidden', !isActive);
 
-            // ✅ Show or hide tab content
-            content.style.display = isActive ? "block" : "none";
+            if (isActive) {
+                this.activeTab = { button, content, loader };
+                console.log(`switchTab: Activating tab:`, button.dataset.element);
 
-            // ✅ Load dynamic content if loader exists & content is empty
-            if (isActive && loader && content.innerHTML.trim() === "") {
-                loader(content);
+                if (loader) {
+                    console.log(`switchTab: Calling loader for tab:`, button.dataset.element);
+
+                    loader(content); // Always call loader when switching
+                    updateElements();
+                } else {
+                    console.log(`switchTab: No loader found for tab:`, button.dataset.element);
+                }
             }
         });
     }
+
+    reloadActiveTab() {
+        if (this.activeTab?.loader) {
+            this.activeTab.loader(this.activeTab.content);
+        }
+    }
 }
 
-// ✅ Helper functions to create UI elements
 function createTabButton(id, label) {
     const button = document.createElement('button');
     button.setAttribute('data-element', id);
@@ -43,12 +57,11 @@ function createTabButton(id, label) {
 
 function createTabContent(id) {
     const content = document.createElement('div');
-    content.setAttribute('id', id);                              // ✅ so getElementById works
-    content.setAttribute('data-element', id.replace("Content", "")); // keeps compatibility with tab logic
+    content.setAttribute('id', id);
+    content.setAttribute('data-element', id.replace("Content", ""));
     content.classList.add('tab-content', 'hidden');
     return content;
 }
 
-// ✅ Correct export syntax
 export { createTabButton, createTabContent };
 export default TabManager;
