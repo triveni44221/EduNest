@@ -88,6 +88,7 @@ export function createFieldset(title, fields) {
 
     return fieldset;
 }
+window.isAddStudentFormDirty = false;
 
 export function renderForm(container, formFields, fieldsetGroups, adjustedIndexes, isEdit, studentId, studentData, submitHandler) {
 
@@ -283,7 +284,6 @@ if (fieldsetGroups['Address Details']) {
     }
 }
 
-// 3. Nationality Select Logic
 function initializeFormValues() {
     updateElements();
     const nationalitySelect = elements.nationality;
@@ -330,6 +330,15 @@ setTimeout(() => {
     
 }
 
+export function monitorFormChanges(form) {
+    const inputElements = form.querySelectorAll('input, select, textarea');
+    inputElements.forEach(input => {
+        input.addEventListener('input', () => {
+            window.isAddStudentFormDirty = true;
+        });
+    });
+}
+
 export function displayFormErrors(errors) {
     for (const field in errors) {
         const errorElement = elements[`${field}Error`];
@@ -337,6 +346,34 @@ export function displayFormErrors(errors) {
             errorElement.textContent = errors[field];
         }
     }
+}
+
+export function showLeaveConfirmation(onConfirm) {
+    const modal = document.getElementById('confirmationModal');
+    modal.classList.remove('hidden');
+
+    const confirmBtn = document.getElementById('confirmLeave');
+    const cancelBtn = document.getElementById('cancelLeave');
+
+    const cleanUp = () => {
+        modal.classList.add('hidden');
+        confirmBtn.removeEventListener('click', confirmHandler);
+        cancelBtn.removeEventListener('click', cancelHandler);
+    };
+
+    const confirmHandler = () => {
+        cleanUp();
+        window.isAddStudentFormDirty = false;
+        elements.addStudentFormContainer.innerHTML = '';  // Clear form
+        onConfirm();
+    };
+
+    const cancelHandler = () => {
+        cleanUp();
+    };
+
+    confirmBtn.addEventListener('click', confirmHandler);
+    cancelBtn.addEventListener('click', cancelHandler);
 }
 
 export async function showEditEntity({
@@ -405,18 +442,4 @@ export function showEditStudent(studentTabManager, studentData) {
     });
 }
 
-/*
-export function showEditStudent(studentTabManager, studentData) {
-    showEditEntity({
-        entityType: 'student',
-        containerElement: elements.addStudentFormContainer,
-        switchTabCallback: () => studentTabManager?.switchTab(elements.addStudentTabButton),
-        renderCallback: renderStudentForm,
-        afterRenderCallback: initializeElements,
-        formDataKeyToRemove: "addStudentFormData",
-        formSelector: '[data-element="editStudentForm"]',
-        data: studentData,
-    });
-}
-*/
 

@@ -1,9 +1,9 @@
-// filters.js
-
+import { lastUsedStudentFilters, currentView } from './sharedElements.js';
 
 function createFiltersContainer(html, extraClasses = []) {
     const container = document.createElement('div');
     container.classList.add('filters-container', ...extraClasses);
+    container.setAttribute('data-element', 'filtersContainer');
     container.innerHTML = html;
     return container;
 }
@@ -45,6 +45,7 @@ export function getFiltersByType(container, selectors) {
     });
     return filters;
 }
+
 export function getClassFilters(container) {
     return getFiltersByType(container, [
         { key: 'classYear', classSelector: '.year-checkbox-container' },
@@ -59,17 +60,30 @@ export function getFeeFilters(container) {
 }
 
 export function removeFiltersFromAllTabs() {
-    const allTabContents = document.querySelectorAll('.tab-content'); 
+    const allTabContents = document.querySelectorAll('.tab-content');
     allTabContents.forEach(tabContent => {
-      const filtersWrapper = tabContent.querySelector('.filters-wrapper');
-      if (filtersWrapper) filtersWrapper.remove();
+        const filtersWrapper = tabContent.querySelector('.filters-wrapper');
+        if (filtersWrapper) filtersWrapper.remove();
     });
-  }
+}
+
+export function restoreFilterCheckboxStates(filtersContainer, savedFilters) {
+    Object.entries(savedFilters).forEach(([key, values]) => {
+        values.forEach(val => {
+            const input = filtersContainer.querySelector(`input[value="${val}"]`);
+            if (input) {
+                input.checked = true;
+            } else {
+                console.warn(`⚠️ No input found for saved filter value "${val}"`);
+            }
+        });
+    });
+}
 
 export function injectFilters(container, filterType, reloadCallback) {
     if (!container || !container.classList.contains('tab-content')) return;
 
-    if (container.querySelector('.filters-wrapper')) {
+    if (container.querySelector('.filters-wrapper')|| currentView !== 'list') {
         return;
     }
 
@@ -86,6 +100,20 @@ export function injectFilters(container, filterType, reloadCallback) {
     if (filtersContainer) {
         filtersWrapper.appendChild(filtersContainer);
         container.prepend(filtersWrapper);
-        filtersContainer.addEventListener('change', reloadCallback);
+        const checkboxes = filtersContainer.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', () => {
+                const activeFilters = getClassFilters(filtersContainer);
+                // Clear classYear and groupName if no filters are selected
+                if (Object.keys(activeFilters).length === 0) {
+                    delete lastUsedStudentFilters.classYear;
+                    delete lastUsedStudentFilters.groupName;
+                } else {
+                    Object.assign(lastUsedStudentFilters, activeFilters);
+                }
+                console.log('Updated filters on change:', JSON.stringify(lastUsedStudentFilters)); // Debug
+                reloadCallback();
+            });
+        });
     }
 }

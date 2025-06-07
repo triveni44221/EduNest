@@ -5,8 +5,6 @@ import { elements, initializeElements } from '../utils/sharedElements.js';
 import { createSubmitButton} from "../utils/formUtils.js"; 
 import { normalizeBooleans } from '../utils/dataUtils.js';
 
-import { studentTabManager } from '../students/students.js';
-
 
 function createYesNoDropdown(label, selectId, fieldToToggle) {
     const dropdownDiv = document.createElement('div');
@@ -346,6 +344,8 @@ export async function loadFeeDetailsContent(student, contentContainer, forceRelo
         renderIfEmptyFn: renderFeeFields,
         forceReload
     });
+    updateStudentDetailBreadcrumbs(elements);
+
 }
 
 export function gatherFeeData() {

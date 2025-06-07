@@ -1,1 +1,0 @@
-validation logic for add student form - sudent id and admission numbers ned to be numbers.

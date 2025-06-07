@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduTrack</title>
+    
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/utilities.css">
+    <link rel="stylesheet" href="css/components/buttons.css">
+    <link rel="stylesheet" href="css/components/data-display.css">
+    <link rel="stylesheet" href="css/components/forms-tables-filters.css">
+    <link rel="stylesheet" href="css/components/navigation.css">
+    <link rel="stylesheet" href="css/components/tabs-and-authentication.css">
+
+<link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    </noscript>
+</head>
+<body>
+    <header class="header">
+        <div class="welcome-message">EduTrack</div>
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search by name or ID..." aria-label="Search by name or ID">
+            <i class="fas fa-search search-icon"></i>
+        </div>
+    </header>
+    <!-- Sidebar is dynamically loaded here -->
+    <div id="sidebar-container" role="navigation"></div>
+
+
+    <main id="content">
+        <div id="loadingSpinner" style="display:none;">Loading...</div>
+        <h1>Welcome to EduTrack!</h1>   
+        <p>Select a tab from the sidebar to navigate to different sections.</p>
+    </main>
+
+    <script src="sidebar/sidebar.js" defer></script>
+    <script>
+        fetch('sidebar/sidebar.html')
+    .then(response => response.text())
+    .then(data => {
+        document.getElementById('sidebar-container').innerHTML = data;
+        setupSidebar(); // Ensures setupSidebar is called only after loading sidebar
+    })
+    .catch(error => console.error('Failed to load sidebar:', error));
+
+    </script>
+</body>
+</html>

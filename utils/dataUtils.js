@@ -32,3 +32,11 @@ export function normalizeBooleans(data, booleanFields = []) {
     return normalized;
 }
 
+export function normalizeFilterValues(filters) {
+    const normalized = {};
+    for (const key in filters) {
+        const value = filters[key];
+        normalized[key] = Array.isArray(value) ? value : [value];
+    }
+    return normalized;
+}

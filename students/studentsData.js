@@ -1,10 +1,12 @@
 // students/studentsData.js
-import { elements, initializeElements, updateElements } from '../utils/sharedElements.js';
+import { elements, initializeElements, updateElements, lastUsedStudentFilters } from '../utils/sharedElements.js';
 import { toggleVisibility  } from '../utils/uiUtils.js';
 import { capitalizeFirstLetter, normalizeString } from '../utils/dataUtils.js';
-import { renderStudentList } from './studentsUI.js';
+import { renderStudentList, handleActiveStudentsRowClick } from './studentsUI.js';
 import { initPagination, ensurePaginationContainer } from '../utils/paginationUtils.js'; 
 import { getClassFilters } from '../utils/filters.js';
+import { baseColumns } from '../utils/studentListConfigs.js';
+
 
 export let students = [];
 
@@ -179,7 +181,7 @@ export function getActiveFilters() {
     const activeTabContent = document.querySelector('.tab-content:not(.hidden)');
     if (!activeTabContent) return {};
 
-    const filtersContainer = activeTabContent.querySelector('.filters-container');
+    const filtersContainer = activeTabContent.querySelector('[data-element="filtersContainer"]');
     if (!filtersContainer) return {};
 
     // Handle filters for students tab (basic filters) or fees tab (fee filters)
@@ -218,23 +220,35 @@ export async function fetchStudentsFromDatabase(page = 1, limit = studentsPerPag
         return [];
     }
 }
-
-export async function filterAndRenderStudents({ page = 1, limit = studentsPerPage } = {}) {
+export async function filterAndRenderStudents({
+    page = 1, 
+    limit = studentsPerPage,
+    columns = baseColumns,
+    rowClickHandler = handleActiveStudentsRowClick,
+    filters = {}
+} = {}) {
+    delete lastUsedStudentFilters.classYear;
+    delete lastUsedStudentFilters.groupName;
+    Object.assign(lastUsedStudentFilters, { ...getActiveFilters(), ...filters });
+    console.log('Applied filters:', JSON.stringify(lastUsedStudentFilters)); // Debug
+    //console.log('Active tab:', currentActiveStudentTypeTabLabel); // Debug
     if (!elements?.studentListContainer) {
         console.error("Elements not initialized before calling filterAndRenderStudents");
         return;
     }
 
-    const filters = getActiveFilters();
+    const activeFilters = { ...getActiveFilters(), ...filters };  // ✅ used for API calls
+
     const validPage = Number(page) || 1;
     const validLimit = isNaN(limit) ? studentsPerPage : limit;
 
     try {
-        students = await fetchStudentsFromDatabase(validPage, validLimit, filters);
-        const total = await window.electron.invoke('getFilteredStudentCount', filters);
+        const fetchedStudents = await fetchStudentsFromDatabase(validPage, validLimit, activeFilters);
+        const total = await window.electron.invoke('getFilteredStudentCount', activeFilters);
 
-        renderStudentList(students);
+        renderStudentList({ students: fetchedStudents, columns, rowClickHandler });
 
+        
         ensurePaginationContainer(elements.studentListContainer);
         updateElements();
 
@@ -243,7 +257,11 @@ export async function filterAndRenderStudents({ page = 1, limit = studentsPerPag
                 totalItems: total,
                 itemsPerPage: validLimit,
                 currentPage: validPage,
-                onPageChange: (newPage) => filterAndRenderStudents({ page: newPage, limit: validLimit }),
+                onPageChange: (newPage) => filterAndRenderStudents({
+                    page: newPage,
+                    limit: validLimit,
+                    filters: activeFilters
+                }),
                 container: elements.paginationContainer,
             });
 
@@ -258,3 +276,4 @@ export async function filterAndRenderStudents({ page = 1, limit = studentsPerPag
         console.error("Error fetching and rendering students:", error);
     }
 }
+

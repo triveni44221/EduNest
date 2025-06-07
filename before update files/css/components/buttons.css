@@ -1,0 +1,65 @@
+
+button {
+    background-color: #284361;
+    color: white;
+    padding: 14px 30px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+    margin-top: 20px;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+/* Controls Bar Buttons - Unified Style */
+.controls-button {
+    background-color: #e2e8f0; 
+    color: #0e141f; 
+    padding: 10px 24px;
+    font-size: 16px;
+    font-weight: 400;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.controls-button:hover {
+    background-color: #a1cc7d; /* Tailwind Blue-600 */
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.controls-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4); /* Blue focus ring */
+}
+
+.controls-button .button-icon {
+    margin-right: 10px;
+    font-size: 16px;
+    color: inherit;
+    transition: transform 0.2s ease;
+}
+
+.controls-button:hover .button-icon {
+    transform: scale(1.1);
+}
+
+.top-controls {
+    display: flex;
+    justify-content: flex-end;
+    gap: 16px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    padding: 3px 0;
+    background-color: #ffffff; 
+    padding: 8px 8px;
+}

@@ -9,30 +9,34 @@
 <body>
         <div data-element="studentsTab" class="students-tab">
             <div class="students-header white-background">
-                <div class="tabs">
-                    <button data-element="allStudentsTabButton" class="tab-button">All Students</button>
+                <div data-element="breadcrumbContainer" class="breadcrumb-container"></div>
+
+                <div class="tabs" data-element="studentTypeTabs">
+                    <button data-element="activeStudentsTabButton" class="tab-button">Active Students</button>
+                    <button data-element="retainedStudentsTabButton" class="tab-button">Retained Students</button>
                     <button data-element="pastStudentsTabButton" class="tab-button">Past Students</button>
                     <button data-element="dropOutsTabButton" class="tab-button">Drop Outs</button>
                     <button data-element="deletedStudentsTabButton" class="tab-button">Deleted Students</button>
-
                 </div>
             </div>
-            <!-- All Students Tab content -->
-        <div class="tab-content" data-element="allStudentsTab">
-            <!-- Detailed student info will appear here when a row is clicked -->
-            <div data-element="studentDataContainer" class="student-data-container"></div> 
-            <div data-element="controlsContainer" class="top-controls"></div>
+            <!-- Active Students Tab content -->
+            <div class="tab-content" data-element="activeStudentsTab">
+                <!-- Detailed student info will appear here when a row is clicked -->
+                <div data-element="studentDataContainer" class="student-data-container"></div> 
+                <div data-element="controlsContainer" class="top-controls"></div>
 
-            <!-- Add Student Form (separate box, not wrapping anything) -->
-                <div class="student-form" data-element="addStudentFormContainer"></div>
+                <!-- Add Student Form (separate box, not wrapping anything) -->
+                    <div class="student-form" data-element="addStudentFormContainer"></div>
 
-                <!-- Student List (separate sibling) -->
-                <div class="student-list" data-element="studentListContainer"></div>
-        </div>
+                    <!-- Student List (separate sibling) -->
+                    <div class="student-list" data-element="studentListContainer"></div>
+            </div>
+            <div class="tab-content" data-element="retainedStudentsTab">
+                <!-- Retained Students Tab content -->
+            </div>
 
-        <div class="tab-content" data-element="pastStudentsTab">
-            <!-- Content for Add Student Tab -->
-                <!-- Add student form content will go here -->
+            <div class="tab-content" data-element="pastStudentsTab">
+                <!-- Past Students Tab content will go here -->
             </div>
             <div class="tab-content" data-element="dropOutsTab">
                 <!-- Drop Outs Tab content -->
@@ -41,8 +45,17 @@
             <div class="tab-content" data-element="deletedStudentsTab">
                 <!-- Deleted Students Tab content -->
             </div>
-            
+    
         </div>
     </div>
+    <!-- Confirmation Modal -->
+<div id="confirmationModal" class="modal hidden">
+    <div class="modal-content">
+      <p>You have unsaved changes in the Add Student form. Are you sure you want to leave this page?</p>
+      <button id="confirmLeave">Yes, Leave</button>
+      <button id="cancelLeave">Cancel</button>
+    </div>
+  </div>
+  
 </body>
 </html>

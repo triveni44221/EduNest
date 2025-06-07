@@ -1,20 +1,50 @@
 import { updateElements } from './sharedElements.js';
+import { showLeaveConfirmation } from '../students/studentsForm.js';
+
+
+
 
 class TabManager {
-    constructor(tabButtons, tabContents, defaultTab, contentLoaders = {}) {
+    constructor(tabButtons, tabContents, defaultTab, contentLoaders = {}, onTabSwitch = null) {
         this.tabs = tabButtons.map((btn, index) => ({
             button: btn,
             content: tabContents[index],
             loader: contentLoaders[btn.getAttribute("data-element")] || null,
         }));
         this.activeTab = defaultTab || this.tabs[0];
+        this.onTabSwitch = onTabSwitch;
         this.init();
     }
 
     init() {
         this.tabs.forEach(({ button }) => {
-            button.addEventListener('click', () => this.switchTab(button));
+            // 🧱 Block A logic inserted here
+            button.addEventListener('click', () => {
+                if (button.classList.contains('active')) return;
+
+                if (window.isAddStudentFormDirty) {
+                    showLeaveConfirmation(() => {
+                        this.switchTab(button);
+
+                        if (button.dataset.element === 'activeStudentsTabButton') {
+                            toggleVisibility({
+                                show: [
+                                    elements.studentDataContainer,
+                                    elements.studentListContainer,
+                                    elements.filtersContainer,
+                                    elements.controlsContainer,
+                                    elements.paginationContainer
+                                ],
+                                hide: [elements.addStudentFormContainer]
+                            });
+                        }
+                    });
+                } else {
+                    this.switchTab(button);
+                }
+            });
         });
+
         this.switchTab(this.activeTab.button);
     }
 
@@ -28,10 +58,13 @@ class TabManager {
                 this.activeTab = { button, content, loader };
                 console.log(`switchTab: Activating tab:`, button.dataset.element);
 
+                if (this.onTabSwitch) {
+                    this.onTabSwitch(button);
+                }
+
                 if (loader) {
                     console.log(`switchTab: Calling loader for tab:`, button.dataset.element);
-
-                    loader(content); // Always call loader when switching
+                    loader(content);
                     updateElements();
                 } else {
                     console.log(`switchTab: No loader found for tab:`, button.dataset.element);
@@ -45,7 +78,7 @@ class TabManager {
             this.activeTab.loader(this.activeTab.content);
         }
     }
-}
+}   
 
 function createTabButton(id, label) {
     const button = document.createElement('button');

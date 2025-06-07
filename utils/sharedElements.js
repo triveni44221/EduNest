@@ -1,7 +1,12 @@
 import { getElementsByDataAttribute } from "./uiUtils.js";
+export let lastUsedStudentFilters = {};
 
+export function resetStudentFilters() {
+    Object.keys(lastUsedStudentFilters).forEach(key => delete lastUsedStudentFilters[key]);
+}
 
 export let elements = {};
+export let currentView = 'list'; // Tracks 'list', 'addStudent', or 'studentDetails'
 
 export function initializeElements() {
     elements = getElementsByDataAttribute("data-element");
@@ -16,7 +21,8 @@ export function initializeElements() {
     ];
     requiredElements.forEach(id => {
         if (!elements[id]) {
-            console.warn(`⚠️ Warning: Missing element '${id}' in sharedElements.js`);
+            // Comment this out to suppress warnings temporarily
+        // console.warn(`⚠️ Warning: Missing element '${id}' in sharedElements.js`);
         }
     });
 }

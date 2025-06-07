@@ -1,0 +1,235 @@
+/* components/data-display.css */
+
+.student-section {
+    margin-bottom: 25px;
+    padding: 20px;
+    border-radius: 8px;
+    background: #ffffff;
+    border: 1px solid #ddd;
+    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease-in-out;
+    max-width:800px; /* Keeps layout compact */
+}
+
+.student-section:hover {
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.student-section h4 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #333;
+    margin-top: 0;
+    margin-bottom: 12px;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 8px;
+}
+
+/* Adjust grid for compact alignment */
+.student-section dl {
+    display: grid;
+    grid-template-columns: 140px auto; /* Labels take 140px, values auto-adjust */
+    row-gap: 6px;
+    column-gap: 50px;
+    font-size: 1rem;
+    color: #555;
+    align-items: center;
+}
+
+.student-section dt {
+    font-weight: 600;
+    text-align: left; /* Keep left-aligned */
+    color: #444;
+    white-space: nowrap; /* Prevents label wrapping */
+}
+
+.student-section dd {
+    margin: 0;
+    padding: 4px 10px;
+    background: #f8f9fa;
+    border-radius: 5px;
+    font-size: 0.95rem;
+    color: #222;
+}
+
+.edit-button {
+    padding: 10px 20px;
+    background: #007bff;
+    color: white;
+    font-size: 1rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out, transform 0.2s ease;
+}
+
+.edit-button:hover {
+    background: #0056b3;
+    transform: translateY(-2px);
+}
+.admission-container {
+    margin-top: 20px; /* Add or adjust this line */
+    margin-bottom: 25px;
+    padding: 20px;
+    border-radius: 8px;
+    background: #ffffff;
+    border: 1px solid #ddd;
+    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease-in-out;
+    max-width: 800px;
+}
+
+.admission-container h4 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #333;
+    margin-top: 0;
+    margin-bottom: 12px;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 8px;
+}
+
+/* Admission Details Grid */
+.admission-details {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.admission-details dl {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+/* Photo Container */
+.photo-container {
+    margin-left: 20px;
+    text-align: center;
+}
+.student-details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px; /* Add some space between header and sections */
+}
+
+/* Student Details Grid (4 Columns) */
+.student-details dl {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+/* Identification Marks Row */
+.identification-mark-row {
+    display: flex;
+    gap: 10px;
+    grid-column: span 4;
+    align-items: center;
+}
+
+/* Identification Label */
+.identification-label {
+    min-width: 188.52px;
+}
+
+/* Identification Value */
+.identification-value {
+    width: 450px;
+}
+/* Dropdown Styling */
+.dropdown {
+    display: none; /* Hidden by default */
+    position: absolute;
+    top: 100%; /* Adjust this value if necessary */
+    left: 0;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    border-radius: 8px;
+    z-index: 100; /* Make sure the dropdown appears above other elements */
+    transition: all 0.3s ease-in-out; /* Smooth appearance */
+}
+
+/* Show the dropdown when active */
+.dropdown.show {
+    display: block;
+}
+
+/* Dropdown Item Styling */
+.dropdown-item {
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.dropdown-item:hover {
+    background-color: #f0f0f0;
+}
+
+.student-primary-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 15px 60px;
+    margin-top: 30px;
+    margin-bottom: 20px;
+    font-size: 1.2em;
+    font-weight: bold;
+    background: #82b5ee;
+    position: relative;
+    z-index: 11;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    color: #1d1d1d;
+    clip-path: polygon(10% 0%, 90% 0%, 100% 50%, 90% 100%, 10% 100%, 0% 50%);
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    min-width: 50%;
+    white-space: nowrap; /* Ensures text remains in a single line */
+}
+
+.student-info-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px; /* Adjust spacing between elements */
+}
+
+.infoSeparator {
+    font-weight: normal;
+    margin: 0 5px; /* Fine-tuning spacing around hyphens */
+    color: inherit;
+}
+
+.student-name, .student-class, .student-id {
+    color: #1d1d1d;
+    font-weight: bold;
+}
+
+.no-students-message {
+    text-align: center;
+    color: #555;
+    font-style: italic;
+    margin: 20px 0;
+  }
+  
+
+
+
+.student-photo-container {
+    float: right;
+    width: 150px;
+    height: 150px;
+    border: 1px dashed #ccc;
+    text-align: center;
+    line-height: 150px;
+    font-size: 14px;
+    color: #777;
+    overflow: hidden;
+    position: relative;
+}

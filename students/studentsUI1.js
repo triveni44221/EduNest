@@ -15,9 +15,11 @@ import { removeFiltersFromAllTabs } from '../utils/filters.js';
 let sortedStudents = [];
 
 export async function showStudentsTab(studentTabManager) {
+    currentView = 'list'; // Reset to list view
+    studentTabManager.reloadActiveTab();
     initializeEventListeners(studentTabManager);
 
-    if (!elements.allStudentsTabButton) {
+    if (!elements.activeStudentsTabButton) {
         console.error('Students tab button not found.');
         return;
     }
@@ -31,8 +33,7 @@ export async function showStudentsTab(studentTabManager) {
         elements.studentDataContainer.innerHTML = '';
     }
     try {
-        await filterAndRenderStudents();
-        attachRowClickEvents();
+        await filterAndRenderStudents({ columns: baseColumns, rowClickHandler: handleActiveStudentsRowClick, filters: { status: 'active' } });
     } catch (error) {
         console.error('❌ Error fetching students:', error);
     }
@@ -41,8 +42,7 @@ export async function showStudentsTab(studentTabManager) {
 
 export function showAddStudent() {
     updateElements();
-    removeFiltersFromAllTabs();
-
+    currentView = 'addStudent'; // Set view state
     
     const currentForm = elements.addStudentFormContainer.querySelector('form');
     const isEditForm = currentForm && currentForm.dataset.formType === 'edit';
@@ -52,9 +52,13 @@ export function showAddStudent() {
         renderStudentForm(elements.addStudentFormContainer);
     }
     
+    const form = elements.addStudentFormContainer.querySelector('form');
+    monitorFormChanges(form);
+    window.isAddStudentFormDirty = false;
+
     toggleVisibility({
-        show: [elements.studentDataContainer, elements.addStudentFormContainer],
-        hide: [elements.studentListContainer, elements.studentsFiltersContainer,elements.controlsContainer, elements.paginationContainer]
+        show: [elements.addStudentFormContainer],
+        hide: [elements.studentDataContainer, elements.studentListContainer, elements.filtersContainer, elements.controlsContainer, elements.paginationContainer]
     });
     
     restoreFormData();
@@ -133,7 +137,7 @@ export function renderStudentList(students) {
     elements.studentListContainer.innerHTML = '';
 
     toggleVisibility({ 
-        show: [elements.studentListContainer, elements.studentsFiltersContainer, elements.controlsContainer], 
+        show: [elements.studentListContainer, elements.filtersContainer, elements.controlsContainer], 
         hide: [elements.studentDataContainer, elements.addStudentFormContainer] 
     });
 
@@ -225,7 +229,6 @@ export function handleEditButtonClick(event) {
 }
 
 export function displayStudentData(studentId) {
-    removeFiltersFromAllTabs();  
     const student = students.find(student => String(student.studentId) === String(studentId));
 
     if (!student) {
@@ -235,9 +238,11 @@ export function displayStudentData(studentId) {
     }
     updateElements();
 
+    currentView = 'studentDetails'; // Set view state
+
     toggleVisibility({
-        show: [elements.studentDataContainer],
-        hide: [elements.studentListContainer,elements.addStudentFormContainer, elements.studentsFiltersContainer,elements.controlsContainer, elements.paginationContainer]
+        show: [elements.studentDataContainer, elements.breadcrumbContainer],
+        hide: [elements.studentListContainer, elements.addStudentFormContainer, elements.filtersContainer, elements.controlsContainer, elements.studentTypeTabs, elements.paginationContainer]
     });
     displayStudentTabs(student);
 }

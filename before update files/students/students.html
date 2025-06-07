@@ -1,0 +1,50 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Page</title>
+</head>
+<body>
+        <div data-element="studentsTab" class="students-tab">
+            <div class="students-header white-background">
+                <div class="tabs">
+                    <button data-element="activeStudentsTabButton" class="tab-button">Active Students</button>
+                    <button data-element="retainedStudentsTabButton" class="tab-button">Retained Students</button>
+                    <button data-element="pastStudentsTabButton" class="tab-button">Past Students</button>
+                    <button data-element="dropOutsTabButton" class="tab-button">Drop Outs</button>
+                    <button data-element="deletedStudentsTabButton" class="tab-button">Deleted Students</button>
+                </div>
+            </div>
+            <!-- Active Students Tab content -->
+            <div class="tab-content" data-element="activeStudentsTab">
+                <!-- Detailed student info will appear here when a row is clicked -->
+                <div data-element="studentDataContainer" class="student-data-container"></div> 
+                <div data-element="controlsContainer" class="top-controls"></div>
+
+                <!-- Add Student Form (separate box, not wrapping anything) -->
+                    <div class="student-form" data-element="addStudentFormContainer"></div>
+
+                    <!-- Student List (separate sibling) -->
+                    <div class="student-list" data-element="studentListContainer"></div>
+            </div>
+            <div class="tab-content" data-element="retainedStudentsTab">
+                <!-- Retained Students Tab content -->
+            </div>
+
+            <div class="tab-content" data-element="pastStudentsTab">
+                <!-- Past Students Tab content will go here -->
+            </div>
+            <div class="tab-content" data-element="dropOutsTab">
+                <!-- Drop Outs Tab content -->
+            </div>
+            
+            <div class="tab-content" data-element="deletedStudentsTab">
+                <!-- Deleted Students Tab content -->
+            </div>
+    
+        </div>
+    </div>
+</body>
+</html>

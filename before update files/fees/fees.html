@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Page</title>
+</head>
+<body>
+        <div data-element="feesTab" class="fees-tab">
+            <div class="students-header white-background">
+                <div class="tabs">
+                    <button data-element="currentStudentsTabButton" class="tab-button">Current Students</button>
+                    <button data-element="pastStudentsTabButton" class="tab-button">Past Students</button>
+                </div>
+            </div>
+            <!-- Current Students Tab content -->
+        <div class="tab-content" data-element="currentStudentsTab">
+            <!-- Detailed student info will appear here when a row is clicked -->
+            <div data-element="feesDataContainer" class="fees-data-container"></div> 
+            <div data-element="filtersContainer"></div>
+
+            <!-- Student list with clickable rows -->
+            <div class="student-list" data-element="studentListContainer"></div>
+            <!-- Dynamically generated student list goes here -->
+        </div>
+
+        <div class="tab-content" data-element="pastStudentsTab">
+            <!-- Content for Add Student Tab -->
+            <div class="student-list" data-element="studentListContainer"></div>
+                <!-- Add student form content will go here -->
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -211,9 +211,13 @@
     font-weight: bold;
 }
 
-
-
-
+.no-students-message {
+    text-align: center;
+    color: #555;
+    font-style: italic;
+    margin: 20px 0;
+  }
+  
 
 .student-photo-container {
     float: right;

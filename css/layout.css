@@ -86,3 +86,74 @@
     flex-wrap: wrap;
     padding: 3px 0;
 }
+
+
+
+
+
+/* Breadcrumb Styles */
+.breadcrumb-container {
+    padding: 10px 0;
+    font-size: 0.9em;
+    color: #555;
+    border-bottom: 1px solid #eee; /* Optional: adds a subtle line below breadcrumbs */
+    margin-bottom: 15px; /* Spacing between breadcrumbs and content below */
+}
+
+.breadcrumb-item {
+    display: inline-block; /* Aligns items horizontally */
+    margin-right: 5px; /* Space between item and separator */
+}
+
+.breadcrumb-item a {
+    color: #007bff; /* Blue for clickable links */
+    text-decoration: none;
+    transition: color 0.2s ease-in-out; /* Smooth hover effect */
+}
+
+.breadcrumb-item a:hover {
+    color: #0056b3; /* Darker blue on hover */
+    text-decoration: underline; /* Underline on hover */
+}
+
+.breadcrumb-item.separator {
+    color: #999; /* Color for the '>' symbol */
+    margin-left: 2px;
+    margin-right: 7px; /* Space around the separator */
+}
+
+.breadcrumb-item.current-page {
+    color: #333; /* Darker color for the current page */
+    font-weight: bold;
+    cursor: default; /* No pointer cursor for the current item */
+}
+
+/* Utility class to hide elements (ensure this is present if not already) */
+.hidden {
+    display: none !important;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modal.hidden {
+  display: none;
+}
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+}
+.modal-content button {
+  margin: 10px;
+}
